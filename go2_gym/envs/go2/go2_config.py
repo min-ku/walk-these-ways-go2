@@ -28,8 +28,8 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
 
     _ = Cnfg.control
     _.control_type = 'P' # P
-    _.stiffness = {'joint': 25.}  # [N*m/rad] 关节PD参数有待调整 
-    _.damping = {'joint': 0.6}  # [N*m*s/rad] 关节PD参数有待调整 
+    _.stiffness = {'joint': 25.}  # [N*m/rad]
+    _.damping = {'joint': 0.6}  # [N*m*s/rad]
     # action scale: target angle = actionScale * action + defaultAngle
     _.action_scale = 0.25
     _.hip_scale_reduction = 0.5
@@ -71,7 +71,7 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
     _ = Cnfg.env
     _.num_observations = 42
     _.observe_vel = False
-    _.num_envs = 4096
+    _.num_envs = 4096 #640
 
     _ = Cnfg.commands
     _.lin_vel_x = [-1.0, 1.0]

@@ -30,7 +30,7 @@ def load_policy(logdir):
 
 
 def load_env(label, headless=False):
-    dirs = glob.glob(f"../runs/{label}/*")
+    dirs = glob.glob(f"./runs/{label}/*")
     logdir = sorted(dirs)[0]
 
     with open(logdir + "/parameters.pkl", 'rb') as file:
@@ -98,7 +98,8 @@ def play_go2(headless=True):
     import os
 
     # label = "gait-conditioned-agility/pretrain-v0/train"
-    label = "gait-conditioned-agility/pretrain-go2/train"
+    # label = "gait-conditioned-agility/pretrain-go2/train"
+    label = "gait-conditioned-agility/2024-12-08/train"
 
 
     env, policy = load_env(label, headless=headless)
@@ -113,8 +114,10 @@ def play_go2(headless=True):
     x_vel_cmd, y_vel_cmd, yaw_vel_cmd = 1.5, 0.0, 0.0
     body_height_cmd = 0.0
     step_frequency_cmd = 3.0 #3.0
-    # gait = torch.tensor(gaits["trotting"])
     gait = torch.tensor(gaits["pronking"])
+    # gait = torch.tensor(gaits["trotting"])
+    # gait = torch.tensor(gaits["bounding"])
+    # gait = torch.tensor(gaits["pacing"])
     footswing_height_cmd = 0.08
     pitch_cmd = 0.0
     roll_cmd = 0.0
@@ -170,7 +173,8 @@ def play_go2(headless=True):
     axs[2].set_ylabel("Joint Torques (Nm)")
 
     plt.tight_layout()
-    plt.show()
+    # plt.show()
+    plt.savefig("output_plot.png")
 
 
 if __name__ == '__main__':
