@@ -9,6 +9,7 @@ __pycache__/
 
 .DS_Store
 
+# trained models
 /runs/gait-conditioned-agility/2024*/
 /runs/gait-conditioned-agility/pretrain-go2/
 
