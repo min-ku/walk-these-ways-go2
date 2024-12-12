@@ -212,7 +212,7 @@ def train_go2(headless=True):
       import glob
       RunnerArgs.resume = True
       RunnerArgs.resume_curriculum = False # True
-      label = "gait-conditioned-agility/2024-12-10/train"
+      label = "gait-conditioned-agility/2024-12-11/train"
       dirs = glob.glob(f"./runs/{label}/*")
       logdir = sorted(dirs)[0]
       print(logdir[1:])
