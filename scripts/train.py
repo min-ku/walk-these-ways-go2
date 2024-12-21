@@ -207,15 +207,14 @@ def train_go2(headless=True):
 
     env = VelocityTrackingEasyEnv(sim_device='cuda:0', headless=headless, cfg=Cfg)
 
-    resume_training = True
+    resume_training = False
     if resume_training:
       import glob
       RunnerArgs.resume = True
-      RunnerArgs.resume_curriculum = False # True
-      label = "gait-conditioned-agility/2024-12-11/train"
+      RunnerArgs.resume_curriculum = True
+      label = "gait-conditioned-agility/2024-12-11/train" # Change to the latest folder
       dirs = glob.glob(f"./runs/{label}/*")
       logdir = sorted(dirs)[0]
-      print(logdir[1:])
       RunnerArgs.resume_path = logdir[1:]
 
     # log the experiment parameters

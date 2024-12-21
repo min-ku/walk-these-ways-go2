@@ -76,24 +76,23 @@ class Runner:
         if RunnerArgs.resume:
             # load pretrained weights from resume_path
             from ml_logger import ML_Logger
-            loader = ML_Logger(root="http://localhost:8081",
-                               prefix=RunnerArgs.resume_path)
-            weights = torch.load("./runs/gait-conditioned-agility/2024-12-10/train/015450.899560/checkpoints/ac_weights_last.pt")
+            # loader = ML_Logger(root="http://localhost:8081",
+            #                    prefix=RunnerArgs.resume_path)
+
+            weight_path = '.' + RunnerArgs.resume_path + "/checkpoints/ac_weights_last.pt"
+            weights = torch.load(weight_path)
             actor_critic.load_state_dict(state_dict=weights)
 
             if hasattr(self.env, "curricula") and RunnerArgs.resume_curriculum:
                 print("Resume curriculum")
-                with open("./runs/gait-conditioned-agility/2024-12-10/train/015450.899560/curriculum/distribution.pkl", "rb") as f:
-                    import cloudpickle
-                    distributions = cloudpickle.load(f)
-                    # print(distributions["distribution"])
-                # load curriculum state
-                # distributions = loader.load_pkl("curriculum/distribution.pkl")
-                distribution_last = distributions["distribution"]#distributions[-1]["distribution"]
+                curriculum_path = os.getcwd() + RunnerArgs.resume_path + "/curriculum/distribution.pkl"
+                distribution = logger.load_pkl(curriculum_path)
+
+                distribution_last = distribution[-1]["distribution"]
                 gait_names = [key[8:] if key.startswith("weights_") else None for key in distribution_last.keys()]
                 for gait_id, gait_name in enumerate(self.env.category_names):
                     self.env.curricula[gait_id].weights = distribution_last[f"weights_{gait_name}"]
-                    print(gait_name)
+                    print(self.env.curricula[gait_id].weights)
 
         self.alg = PPO(actor_critic, device=self.device)
         self.num_steps_per_env = RunnerArgs.num_steps_per_env

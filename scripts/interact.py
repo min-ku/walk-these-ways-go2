@@ -169,7 +169,8 @@ def interact_go2(headless=False):
 
     modes1 = ["A", "B", "C"] # A: Body Height | B: Lateral Velocity | C: Stance Width
     modes2 = ["D", "E", "F"] # D: Footswing Height | E: Step frequency | F: Body Pitch
-    
+    descrip1 = ["Body Height", "Lateral Velocity", "Stance Width"]
+    descrip2 = ["Footswing Height", "Step frequency", "Body Pitch"]
     Mode1 = 1
     Mode2 = 0
 
@@ -181,6 +182,11 @@ def interact_go2(headless=False):
         name = joystick.get_name()
         textPrint.print(screen, "Welcome! remember to make this the active \nwindow when you wish to use the remote")
         textPrint.print(screen, "Controller detected: {}".format(name) )
+        textPrint.print(screen, "X velocity: {}".format(x_vel_cmd) )
+        textPrint.print(screen, "Y velocity: {}".format(y_vel_cmd) )
+        textPrint.print(screen, "Yaw command: {}".format(yaw_vel_cmd) )
+        textPrint.print(screen, "Mode 1: {} - {}".format(modes1[Mode1], descrip1[Mode1]) )
+        textPrint.print(screen, "Mode 2: {} - {}".format(modes2[Mode2], descrip2[Mode2]) )
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # Handle quit event
