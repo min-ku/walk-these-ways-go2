@@ -194,7 +194,7 @@ def interact_go2(headless=False):
 
             if event.type == pygame.JOYAXISMOTION:
                 if event.axis == 1:  # Left vertical stick (forward/backward control)
-                    x_vel_cmd = -event.value*2
+                    x_vel_cmd = -event.value
                     print(f"x_velocity command: {x_vel_cmd}")
                 
                 elif event.axis == 0: # Left Horizontal stick
