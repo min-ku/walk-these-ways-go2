@@ -25,13 +25,13 @@
 #define TOPIC_LOWSTATE "rt/lowstate"
 #define TOPIC_JOYSTICK "rt/wirelesscontroller"
 
-// 为保证项目代码的稳定性和易理解，没有采用unitree_sdk2中采用的using namespace语句
+// In order to ensure the stability and understandability of the project code, the using namespace statement used in unitree_sdk2 is not used.
 
 constexpr double PosStopF = (2.146E+9f);
 constexpr double VelStopF = (16000.0f);
 
 
-// 无需更改：Unitree 提供的电机校验函数
+// No changes required: motor calibration function provided by Unitree
 uint32_t crc32_core(uint32_t* ptr, uint32_t len)
 {   
     unsigned int xbit = 0;
@@ -65,7 +65,7 @@ uint32_t crc32_core(uint32_t* ptr, uint32_t len)
 }
 
 
-// 遥控器键值联合体，摘自unitree_sdk2，无需更改
+// Remote control key-value union, taken from unitree_sdk2, no need to change
 typedef union
 {
   struct
@@ -133,7 +133,7 @@ public:
     bool _firstRun;
 
     /*LowCmd write thread*/
-    // DDS相关的底层命令发送线程指针
+    // DDS-related underlying commands send thread pointers
     unitree::common::ThreadPtr LcmSendThreadPtr;
     unitree::common::ThreadPtr LcmRecevThreadPtr;
     unitree::common::ThreadPtr lowCmdWriteThreadPtr;
@@ -180,20 +180,20 @@ void Custom::activateService(const std::string& serviceName,int activate)
 
 void Custom::LowStateMessageHandler(const void* message)
 {
-    // 用sdk2读取的底层state
+    // State read with sdk2
     low_state = *(unitree_go::msg::dds_::LowState_*)message;
 }
 
 void Custom::JoystickHandler(const void *message)
 {
-    // 遥控器信号
+    // Remote control signal
     joystick = *(unitree_go::msg::dds_::WirelessController_ *)message;
     key.value = joystick.keys();
 }
 
 // -------------------------------------------------------------------------------
-// 线程 1 ： lcm send 线程
-// 此线程作用：实时通过unitree_sdk2读取low_state信号和joystick信号，并发送给lcm中间件
+// Thread 1: lcm send thread
+// The role of this thread: read the low_state signal and joystick signal through unitree_sdk2 in real time, and send them to the lcm middleware
 void Custom::lcm_send(){
     // leg_control_lcm_data
     for (int i = 0; i < 12; i++)
@@ -202,7 +202,7 @@ void Custom::lcm_send(){
         leg_control_lcm_data.qd[i] = low_state.motor_state()[i].dq();
         leg_control_lcm_data.tau_est[i] = low_state.motor_state()[i].tau_est();
     }
-    // 从IMU读取姿态信息
+    // Read attitude information from IMU
     for(int i = 0; i < 4; i++){
         // 四元数
         body_state_simple.quat[i] = low_state.imu_state().quaternion()[i]; 
@@ -210,16 +210,16 @@ void Custom::lcm_send(){
     for(int i = 0; i < 3; i++){
         // roll pitch yaw
         body_state_simple.rpy[i] = low_state.imu_state().rpy()[i];
-        // IMU 三轴加速度
+        // IMU three-axis acceleration
         body_state_simple.aBody[i] = low_state.imu_state().accelerometer()[i];
-        // IMU 三轴线性加速度
+        // IMU three-axis linear acceleration
         body_state_simple.omegaBody[i] = low_state.imu_state().gyroscope()[i];
     }
     for(int i = 0; i < 4; i++){
-        // 足端触地力
+        // Toe contact force
         body_state_simple.contact_estimate[i] = low_state.foot_force()[i];
     }
-    // 遥控器按键值和摇杆数值
+    // Remote control button value and joystick value
     rc_command.left_stick[0] = joystick.lx();
     rc_command.left_stick[1] = joystick.ly();
     rc_command.right_stick[0] = joystick.rx();
@@ -259,17 +259,18 @@ void Custom::lcm_send(){
 
 
 // -------------------------------------------------------------------------------
-// 线程 2 ： lcm receive 线程
-// 此线程作用：实时通过lcm中间件读取pytorch神经网络输出的期望关节控制信号（q, qd, kp, kd, tau_ff）
-// 查看 go2_gym_deploy/envs/lcm_agent.py 文件，可以知道：
-// 神经网络只输出期望的q，而kp，kd是可以自定义设置的, qd 和 tau_ff 被设置为0
+// Thread 2: lcm receive thread
+// The role of this thread: read the expected joint control signals (q, qd, kp, kd, tau_ff)
+// output by the pytorch neural network through the lcm middleware in real time
+// Check the go2_gym_deploy/envs/lcm_agent.py file to know:
+// The neural network only outputs the expected q, while kp and kd can be customized, qd and tau_ff are set to 0
 void Custom::lcm_receive_Handler(const lcm::ReceiveBuffer *rbuf, const std::string & chan, const pd_tau_targets_lcmt* msg){
     (void) rbuf;
     (void) chan;
-    joint_command_simple = *msg; //接收神经网络输出的关节信号
+    joint_command_simple = *msg; // Receive the joint signal output by the neural network
 }
 
-// 此处参考lcm推荐的标准格式，循环处理，接受lcm消息
+// Here refer to the standard format recommended by lcm, loop processing, and accept lcm messages
 void Custom::lcm_receive(){
     while(true){
         lc.handle();
@@ -278,27 +279,27 @@ void Custom::lcm_receive(){
 
 
 // -------------------------------------------------------------------------------
-// 线程 3 ： unitree_sdk2 command write 线程
-// 此线程作用：初始化low_cmd，经过合理的状态机后，电机将执行神经网络的输出
+// Thread 3: unitree_sdk2 command write thread
+// The role of this thread: initialize low_cmd. After a reasonable state machine, the motor will execute the output of the neural network
 void Custom::InitLowCmd()
 {
-    //LowCmd 类型中的 head 成员 表示帧头，
-    //此帧头将用于 CRC 校验。head 、levelFlag、gpio 等按例程所示设置为默认值即可。
+    // The head member in the LowCmd type represents the frame header.
+    // This frame header will be used for CRC verification. head, levelFlag, gpio, etc. can be set to default values ​​as shown in the routine.
     low_cmd.head()[0] = 0xFE;
     low_cmd.head()[1] = 0xEF;
     low_cmd.level_flag() = 0xFF;
     low_cmd.gpio() = 0;
 
-    /*LowCmd 类型中有 20 个 motorCmd 成员，
-    每一个成员的命令用于控制 Go2 机器人上相对应的一个电机，
-    但 Go2 机器人上只有 12 个电机，
-    故仅有前 12 个有效，剩余的8个起保留作用。*/
+    /* There are 20 motorCmd members in the LowCmd type,
+    The command of each member is used to control a corresponding motor on the Go2 robot.
+    But there are only 12 motors on the Go2 robot.
+    Therefore, only the first 12 are valid, and the remaining 8 are reserved. */
     for(int i=0; i<20; i++)
     {
-        /*此行命令中将 motorCmd 成员的 mode 变量设置为 0x01，
-        0x01 表示将电机设置为伺服模式。
-        如果用户在调试过程中发现无法控制 Go2 机器人的关节电机，
-        请检查变量的值是否为0x01。*/
+        /*In this command line, set the mode variable of the motorCmd member to 0x01,
+        0x01 means setting the motor to servo mode.
+        If the user finds that he cannot control the joint motors of the Go2 robot during the debugging process,
+        Please check if the value of the variable is 0x01. */
         low_cmd.motor_cmd()[i].mode() = (0x01);   // motor switch to servo (PMSM) mode
         low_cmd.motor_cmd()[i].q() = (PosStopF);
         low_cmd.motor_cmd()[i].dq() = (VelStopF);
@@ -309,9 +310,9 @@ void Custom::InitLowCmd()
 }
 
 void Custom::SetNominalPose(){
-    // 运行此cpp文件后，不仅是初始化通信
-    // 同样会在趴下时的初始化关节角度
-    // 将各个电机都设置为位置模式
+    // After running this cpp file, not only the communication is initialized
+    // Also initializes joint angles when lying down
+    // Set each motor to position mode
     for(int i = 0; i < 12; i++){
         joint_command_simple.qd_des[i] = 0;
         joint_command_simple.tau_ff[i] = 0;
@@ -319,7 +320,7 @@ void Custom::SetNominalPose(){
         joint_command_simple.kd[i] = 0.5; 
     }
 
-    // 趴下时的关节角度
+    // Joint angle when lying down
     joint_command_simple.q_des[0] = -0.3;
     joint_command_simple.q_des[1] = 1.2;
     joint_command_simple.q_des[2] = -2.721;
@@ -341,10 +342,10 @@ void Custom::LowCmdWrite(){
     
     if(_firstRun && leg_control_lcm_data.q[0] != 0){
         for(int i = 0; i < 12; i++){
-            // 程序首次运行至此的时候
-            // 将当前各关节角度设置为目标角度
+            // When the program runs to this point for the first time
+            // Set the current joint angles to the target angles
             joint_command_simple.q_des[i] = leg_control_lcm_data.q[i];
-            // 初始化L2+B，防止damping被误触发
+            // Initialize L2+B to prevent damping from being accidentally triggered
             key.components.Y = 0;
             key.components.A = 0;
             key.components.B = 0;
@@ -353,13 +354,13 @@ void Custom::LowCmdWrite(){
         _firstRun = false;
     } 
 
-    // 写了一段安全冗余代码
-    // 当roll角超过限制，或pitch角超过限制，或遥控器按下L2+B键
+    // Write a piece of safety redundant code
+    // When the roll angle exceeds the limit, or the pitch angle exceeds the limit, or the L2+B key is pressed on the remote control
     // if (  low_state.imu_state().rpy()[0] > 0.5 || low_state.imu_state().rpy()[1] > 0.5 || ((int)key.components.B==1 && (int)key.components.L2==1))
     if ( std::abs(low_state.imu_state().rpy()[0]) > 0.8 || std::abs(low_state.imu_state().rpy()[1]) > 0.8 || ((int)key.components.B==1 && (int)key.components.L2==1))
     {       
         for (int i = 0; i < 12; i++){
-            // 进入damping模式
+            // Enter damping mode
             low_cmd.motor_cmd()[i].q() = 0;
             low_cmd.motor_cmd()[i].dq() = 0;
             low_cmd.motor_cmd()[i].kp() = 0;
@@ -407,7 +408,7 @@ void Custom::LowCmdWrite(){
     } 
     else{
         for (int i = 0; i < 12; i++){
-            // 在确保安全的前提下，才执行神经网络模型的输出
+            // Only execute the output of the neural network model under the premise of ensuring safety
             low_cmd.motor_cmd()[i].q() = joint_command_simple.q_des[i];
             low_cmd.motor_cmd()[i].dq() = joint_command_simple.qd_des[i];
             low_cmd.motor_cmd()[i].kp() = joint_command_simple.kp[i];
@@ -416,15 +417,15 @@ void Custom::LowCmdWrite(){
         }  
     }
     
-    /*此段代码中第一行首先计算了 CRC 校验码。
-    最后一行代码表示调用 lowcmd_publisher的Write()函数将控制命令发送给 Go2 机器人。*/
+    /* The first line in this code first calculates the CRC check code.
+    The last line of code indicates calling the Write() function of lowcmd_publisher to send the control command to the Go2 robot. */
     low_cmd.crc() = crc32_core((uint32_t *)&low_cmd, (sizeof(unitree_go::msg::dds_::LowCmd_)>>2)-1);
     lowcmd_publisher->Write(low_cmd);
 }
 
 
 //
-// 与循环工作的线程相关的函数定义已完结
+// The function definition related to the thread working in the loop has been completed
 //----------------------------------------------------------------------
 
 
@@ -434,9 +435,9 @@ void Custom::Init(){
     InitLowCmd();
     SetNominalPose();
 
-    // 这里决定了调用lc.handle()的时候，订阅什么消息，进行什么操作
-    // 订阅什么消息："pd_plustau_targets"
-    // 进行什么操作： lcm_receive_Handler
+    // This determines what messages to subscribe to and what operations to perform when calling lc.handle()
+    // What message to subscribe to: "pd_plustau_targets"
+    // What to do: lcm_receive_Handler
     lc.subscribe("pd_plustau_targets", &Custom::lcm_receive_Handler, this);
 
     /*create low_cmd publisher*/
@@ -452,10 +453,10 @@ void Custom::Init(){
 
 
 void Custom::Loop(){
-    // 新增线程可以实现loop function的功能
+    // Adding new threads can implement the functions of loop function
 
-    // intervalMicrosec : 1微秒 = 0.000001秒
-    // 当dt=0.002s
+    // intervalMicrosec: 1 microsecond = 0.000001 seconds
+    // When dt=0.002s
     // ntervalMicrosec = 2000us
     /*lcm send thread*/
     LcmSendThreadPtr = unitree::common::CreateRecurrentThreadEx("lcm_send_thread", UT_CPU_ID_NONE, dt*1e6, &Custom::lcm_send, this);

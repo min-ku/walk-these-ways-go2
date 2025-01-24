@@ -10,7 +10,7 @@ from go2_gym_deploy.utils.command_profile import *
 
 import pathlib
 
-# lcm多播通信的标准格式
+# Standard format for lcm multicast communication
 lc = lcm.LCM("udpm://239.255.76.67:7667?ttl=255")
 
 def load_and_run_policy(label, experiment_name, max_vel=1.0, max_yaw_vel=1.0):
@@ -21,9 +21,9 @@ def load_and_run_policy(label, experiment_name, max_vel=1.0, max_yaw_vel=1.0):
 # with open(logdir+"/parameters.pkl", 'rb') as file:
     with open(logdir+"/parameters.pkl", 'rb') as file:
         pkl_cfg = pkl.load(file)
-        print(pkl_cfg.keys())
+        # print(pkl_cfg.keys())
         cfg = pkl_cfg["Cfg"]
-        print(cfg.keys())
+        # print(cfg.keys())
 
     print('Config successfully loaded!')
 
