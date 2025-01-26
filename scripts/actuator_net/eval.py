@@ -3,7 +3,7 @@ from glob import glob
 
 
 log_dir_root = "../../logs/"
-log_dir = "example_experiment/2022/11_01/16_01_50_0"
+log_dir = "P/1970/01_05/19_53_01_0"
 
 # Evaluates the existing actuator network by default
 load_pretrained_model = True

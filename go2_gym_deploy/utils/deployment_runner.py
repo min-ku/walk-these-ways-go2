@@ -151,7 +151,8 @@ class DeploymentRunner:
 
                     info.update(policy_info)
                     info.update({"observation": obs, "reward": ret, "done": done, "timestep": i,
-                                 "time": i * self.agents[self.control_agent_name].dt, "action": action, "rpy": self.agents[self.control_agent_name].se.get_rpy(), "torques": self.agents[self.control_agent_name].torques})
+                                 "time": i * self.agents[self.control_agent_name].dt, "action": action, "rpy": self.agents[self.control_agent_name].se.get_rpy(),
+                                 "torques": self.agents[self.control_agent_name].torques, "tau_est": self.agents[self.control_agent_name].se.get_tau_est()})
 
                     if logging: self.logger.log(agent_name, info)
 

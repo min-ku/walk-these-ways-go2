@@ -291,7 +291,6 @@ class LCMAgent():
                  "body_linear_vel_cmd": self.commands[:, 0:2],
                  "body_angular_vel_cmd": self.commands[:, 2:],
                  "privileged_obs": None,
-                 "tau_est": self.se.tau_est, # For actuator net
                 #  -------------------------------------------
                 #  "camera_image_front": images['front'],
                 #  "camera_image_bottom": images['bottom'],
