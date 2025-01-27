@@ -7,7 +7,7 @@ log_dir = "P/1970/01_05/19_53_01_0"
 
 # Evaluates the existing actuator network by default
 load_pretrained_model = True
-actuator_network_path = "../../resources/actuator_nets/unitree_go1.pt"
+actuator_network_path = "../../resources/actuator_nets/unitree_go2.pt"
 
 log_dirs = glob(f"{log_dir_root}{log_dir}/", recursive=True)
 

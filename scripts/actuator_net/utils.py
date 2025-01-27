@@ -93,10 +93,16 @@ def train_actuator_network(xs, ys, actuator_network_path):
     lr = 8e-4
     opt = Adam(model.parameters(), lr=lr, eps=1e-8, weight_decay=0.0)
 
-    epochs = 100
+    epochs = 500
     device = 'cuda:0'
 
     model = model.to(device)
+
+    # Early stopping parameters
+    best_loss = float('inf')
+    patience = 20
+    epochs_no_improve = 0
+
     for epoch in range(epochs):
         epoch_loss = 0
         ct = 0
@@ -140,7 +146,20 @@ def train_actuator_network(xs, ys, actuator_network_path):
 
             print(
                 f'epoch: {epoch} | loss: {epoch_loss:.4f} | test loss: {test_loss:.4f} | mae: {mae:.4f}')
+        
+        # Check for early stopping
+        if test_loss < best_loss:
+            best_loss = test_loss
+            epochs_no_improve = 0
+            model_scripted = torch.jit.script(model)
+            model_scripted.save(actuator_network_path)
+        else:
+            epochs_no_improve += 1
 
+        if epochs_no_improve >= patience:
+            print(f"Early stopping at epoch {epoch}. Best test loss: {best_loss:.4f}")
+            break
+        
         model_scripted = torch.jit.script(model)  # Export to TorchScript
         model_scripted.save(actuator_network_path)  # Save
     return model

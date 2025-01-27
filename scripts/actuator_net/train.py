@@ -2,15 +2,11 @@ from utils import train_actuator_network_and_plot_predictions
 from glob import glob
 
 log_dir_root = "../../logs/"
-log_dir = "example_experiment/2022/11_01/16_01_50_0"
-
-# Evaluates the existing actuator network by default
-# load_pretrained_model = True
-# actuator_network_path = "../../resources/actuator_nets/unitree_go1.pt"
+log_dir = "P_new/1970/01_05/19_53_01_0"
 
 # Uncomment these lines to train a new actuator network
 load_pretrained_model = False
-actuator_network_path = "../../resources/actuator_nets/unitree_go1_new.pt"
+actuator_network_path = "../../resources/actuator_nets/unitree_go2.pt"
 
 
 log_dirs = glob(f"{log_dir_root}{log_dir}/", recursive=True)
