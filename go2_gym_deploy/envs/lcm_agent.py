@@ -93,6 +93,7 @@ class LCMAgent():
                     print(f"PD gain of joint {joint_name} were not defined, setting them to zero")
 
         print(f"p_gains: {self.p_gains}")
+        print(f"d_gains: {self.d_gains}")
 
         self.commands = np.zeros((1, self.num_commands))
         self.actions = torch.zeros(12)
