@@ -6,13 +6,12 @@ from params_proto import PrefixProto, ParamsProto
 class Cfg(PrefixProto, cli=False):
     class env(PrefixProto, cli=False):
         num_envs = 4096
-        num_observations = 235
-        num_scalar_observations = 42
-        # if not None a privilige_obs_buf will be returned by step() (critic obs for assymetric training). None is returned otherwise
-        num_privileged_obs = 18
+        num_observations = 60
+        num_scalar_observations = 60
+        num_privileged_obs = 2 # if not None a privilige_obs_buf will be returned by step() (critic obs for assymetric training). None is returned otherwise
         privileged_future_horizon = 1
         num_actions = 12
-        num_observation_history = 15
+        num_observation_history = 30
         env_spacing = 3.  # not used with heightfields/trimeshes
         send_timeouts = True  # send time out information to the algorithm
         episode_length_s = 20  # episode length in seconds
@@ -36,18 +35,18 @@ class Cfg(PrefixProto, cli=False):
         debug_viz = False
         all_agents_share = False
 
-        priv_observe_friction = True
-        priv_observe_friction_indep = True
+        priv_observe_friction = False
+        priv_observe_friction_indep = False
         priv_observe_ground_friction = False
         priv_observe_ground_friction_per_foot = False
-        priv_observe_restitution = True
-        priv_observe_base_mass = True
-        priv_observe_com_displacement = True
+        priv_observe_restitution = False
+        priv_observe_base_mass = False
+        priv_observe_com_displacement = False
         priv_observe_motor_strength = False
         priv_observe_motor_offset = False
         priv_observe_joint_friction = True
-        priv_observe_Kp_factor = True
-        priv_observe_Kd_factor = True
+        priv_observe_Kp_factor = False
+        priv_observe_Kd_factor = False
         priv_observe_contact_forces = False
         priv_observe_contact_states = False
         priv_observe_body_velocity = False
@@ -71,24 +70,25 @@ class Cfg(PrefixProto, cli=False):
         dynamic_friction = 1.0
         restitution = 0.0
         terrain_noise_magnitude = 0.1
+        terrain_noise = False
         # rough terrain only:
         terrain_smoothness = 0.005
         measure_heights = True
-        # 1mx1.6m rectangle (without center line)
-        measured_points_x = [-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+        measured_points_x = [-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8] # 1mx1.6m rectangle (without center line)
         measured_points_y = [-0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5]
         selected = False  # select a unique terrain type and pass all arguments
         terrain_kwargs = None  # Dict of arguments for selected terrain
         min_init_terrain_level = 0
         max_init_terrain_level = 5  # starting curriculum state
-        terrain_length = 0.5 #defaul = 8.
-        terrain_width = 0.5 # default = 8.
+        terrain_length = 8.
+        terrain_width = 8.
         num_rows = 10  # number of terrain rows (levels)
         num_cols = 20  # number of terrain cols (types)
         # terrain types: [smooth slope, rough slope, stairs up, stairs down, discrete]
         terrain_proportions = [0.1, 0.1, 0.35, 0.25, 0.2]
         # trimesh only:
         slope_treshold = 0.75  # slopes above this threshold will be corrected to vertical surfaces
+        
         difficulty_scale = 1.
         x_init_range = 1.
         y_init_range = 1.
@@ -116,7 +116,7 @@ class Cfg(PrefixProto, cli=False):
         jump_interval_s = 20.  # time between jumps
         jump_duration_s = 0.1  # duration of jump
         jump_height = 0.3
-        heading_command = True  # if true: compute ang vel command from heading error
+        heading_command = False  # if true: compute ang vel command from heading error
         global_reference = False
         observe_accel = False
         distributional_commands = False
@@ -133,6 +133,8 @@ class Cfg(PrefixProto, cli=False):
         lin_vel_x = [-1.0, 1.0]  # min max [m/s]
         lin_vel_y = [-1.0, 1.0]  # min max [m/s]
         ang_vel_yaw = [-1, 1]  # min max [rad/s]
+        heading = [-3.14, 3.14]
+
         body_height_cmd = [-0.05, 0.05]
         impulse_height_commands = False
 
@@ -171,8 +173,6 @@ class Cfg(PrefixProto, cli=False):
         num_bins_stance_width = 1
         num_bins_stance_length = 1
 
-        heading = [-3.14, 3.14]
-
         gait_phase_cmd_range = [0.0, 0.01]
         gait_offset_cmd_range = [0.0, 0.01]
         gait_bound_cmd_range = [0.0, 0.01]
@@ -186,11 +186,11 @@ class Cfg(PrefixProto, cli=False):
         stance_width_range = [0.0, 0.01]
         stance_length_range = [0.0, 0.01]
 
-        exclusive_phase_offset = True
+        exclusive_phase_offset = False
         binary_phases = False
         pacing_offset = False
-        balance_gait_distribution = True
-        gaitwise_curricula = True
+        balance_gait_distribution = False
+        gaitwise_curricula = False
 
     class curriculum_thresholds(PrefixProto, cli=False):
         tracking_lin_vel = 0.8  # closer to 1 is tighter
@@ -207,7 +207,7 @@ class Cfg(PrefixProto, cli=False):
         default_joint_angles = {"joint_a": 0., "joint_b": 0.}
 
     class control(PrefixProto, cli=False):
-        control_type = 'actuator_net' #'P'  # P: position, V: velocity, T: torques
+        control_type = 'P'  # P: position, V: velocity, T: torques
         # PD Drive parameters:
         stiffness = {'joint_a': 10.0, 'joint_b': 15.}  # [N*m/rad]
         damping = {'joint_a': 1.0, 'joint_b': 1.5}  # [N*m*s/rad]
@@ -281,8 +281,9 @@ class Cfg(PrefixProto, cli=False):
         soft_dof_pos_limit = 1.  # percentage of urdf limits, values above this limit are penalized
         soft_dof_vel_limit = 1.
         soft_torque_limit = 1.
-        base_height_target = 1.
+        base_height_target = .25
         max_contact_force = 100.  # forces above this value are penalized
+        
         use_terminal_body_height = False
         terminal_body_height = 0.20
         use_terminal_foot_height = False
@@ -304,12 +305,14 @@ class Cfg(PrefixProto, cli=False):
         torques = -0.00001
         dof_vel = -0.
         dof_acc = -2.5e-7
-        base_height = -0.
-        feet_air_time = 1.0
+        base_height = -0. 
+        feet_air_time =  1.0
         collision = -1.
-        feet_stumble = -0.0
+        feet_stumble = -0.0 
         action_rate = -0.01
         stand_still = -0.
+
+        feet_contact_forces = 0.
         tracking_lin_vel_lat = 0.
         tracking_lin_vel_long = 0.
         tracking_contacts = 0.
@@ -321,7 +324,6 @@ class Cfg(PrefixProto, cli=False):
         energy_expenditure = 0.0
         survival = 0.0
         dof_pos_limits = 0.0
-        feet_contact_forces = 0.
         feet_slip = 0.
         feet_clearance_cmd_linear = 0.
         dof_pos = 0.
@@ -384,10 +386,11 @@ class Cfg(PrefixProto, cli=False):
         dof_vel = 1.5
         lin_vel = 0.1
         ang_vel = 0.2
-        imu = 0.1
         gravity = 0.05
-        contact_states = 0.05
         height_measurements = 0.1
+
+        imu = 0.1
+        contact_states = 0.05
         friction_measurements = 0.0
         segmentation_image = 0.0
         rgb_image = 0.0

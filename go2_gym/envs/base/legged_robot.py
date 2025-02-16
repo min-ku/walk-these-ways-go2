@@ -200,16 +200,16 @@ class LeggedRobot(BaseTask):
                 self.terrain_levels[:self.num_train_envs].float())
         if self.cfg.commands.command_curriculum:
             self.extras["env_bins"] = torch.Tensor(self.env_command_bins)[:self.num_train_envs]
-            self.extras["train/episode"]["min_command_duration"] = torch.min(self.commands[:, 8])
-            self.extras["train/episode"]["max_command_duration"] = torch.max(self.commands[:, 8])
-            self.extras["train/episode"]["min_command_bound"] = torch.min(self.commands[:, 7])
-            self.extras["train/episode"]["max_command_bound"] = torch.max(self.commands[:, 7])
-            self.extras["train/episode"]["min_command_offset"] = torch.min(self.commands[:, 6])
-            self.extras["train/episode"]["max_command_offset"] = torch.max(self.commands[:, 6])
-            self.extras["train/episode"]["min_command_phase"] = torch.min(self.commands[:, 5])
-            self.extras["train/episode"]["max_command_phase"] = torch.max(self.commands[:, 5])
-            self.extras["train/episode"]["min_command_freq"] = torch.min(self.commands[:, 4])
-            self.extras["train/episode"]["max_command_freq"] = torch.max(self.commands[:, 4])
+            # self.extras["train/episode"]["min_command_duration"] = torch.min(self.commands[:, 8])
+            # self.extras["train/episode"]["max_command_duration"] = torch.max(self.commands[:, 8])
+            # self.extras["train/episode"]["min_command_bound"] = torch.min(self.commands[:, 7])
+            # self.extras["train/episode"]["max_command_bound"] = torch.max(self.commands[:, 7])
+            # self.extras["train/episode"]["min_command_offset"] = torch.min(self.commands[:, 6])
+            # self.extras["train/episode"]["max_command_offset"] = torch.max(self.commands[:, 6])
+            # self.extras["train/episode"]["min_command_phase"] = torch.min(self.commands[:, 5])
+            # self.extras["train/episode"]["max_command_phase"] = torch.max(self.commands[:, 5])
+            # self.extras["train/episode"]["min_command_freq"] = torch.min(self.commands[:, 4])
+            # self.extras["train/episode"]["max_command_freq"] = torch.max(self.commands[:, 4])
             self.extras["train/episode"]["min_command_x_vel"] = torch.min(self.commands[:, 0])
             self.extras["train/episode"]["max_command_x_vel"] = torch.max(self.commands[:, 0])
             self.extras["train/episode"]["min_command_y_vel"] = torch.min(self.commands[:, 1])
@@ -685,6 +685,11 @@ class LeggedRobot(BaseTask):
         env_ids = (self.episode_length_buf % sample_interval == 0).nonzero(as_tuple=False).flatten()
         self._resample_commands(env_ids)
         self._step_contact_targets()
+        
+        if self.cfg.commands.heading_command:
+            forward = quat_apply(self.base_quat, self.forward_vec)
+            heading = torch.atan2(forward[:, 1], forward[:, 0])
+            self.commands[:, 2] = torch.clip(0.5*wrap_to_pi(self.commands[:, 3] - heading), -1., 1.)
 
         # measure terrain heights
         if self.cfg.terrain.measure_heights:
@@ -759,6 +764,11 @@ class LeggedRobot(BaseTask):
 
             self.commands[env_ids_in_category, :] = torch.Tensor(new_commands[:, :self.cfg.commands.num_commands]).to(
                 self.device)
+
+        if self.cfg.commands.heading_command:
+            self.commands[env_ids, 3] = torch_rand_float(self.cfg.commands.heading[0], self.cfg.commands.heading[1], (len(env_ids), 1), device=self.device).squeeze(1)
+        else:
+            self.commands[env_ids, 2] = torch_rand_float(self.cfg.commands.ang_vel_yaw[0], self.cfg.commands.ang_vel_yaw[1], (len(env_ids), 1), device=self.device).squeeze(1)
 
         if self.cfg.commands.num_commands > 5:
             if self.cfg.commands.gaitwise_curricula:

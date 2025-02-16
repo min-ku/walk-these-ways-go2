@@ -88,12 +88,16 @@ def load_env(label, headless=False):
 
     Cfg.env.num_recording_envs = 1
     Cfg.env.num_envs = 1
-    Cfg.terrain.num_rows = 10
-    Cfg.terrain.num_cols = 10
+    Cfg.terrain.num_rows = 2
+    Cfg.terrain.num_cols = 2
     Cfg.terrain.border_size = 0
     Cfg.terrain.center_robots = True
     Cfg.terrain.center_span = 1
     Cfg.terrain.teleport_robots = True
+    Cfg.env.episode_length_s = 999999
+    Cfg.terrain.terrain_noise = False
+    Cfg.terrain.terrain_noise_magnitude = 0.05
+    Cfg.terrain.terrain_smoothness = 0.05
 
     Cfg.domain_rand.lag_timesteps = 6
     Cfg.domain_rand.randomize_lag_timesteps = True
@@ -138,7 +142,7 @@ def interact_go2(headless=False):
         
     # label = "gait-conditioned-agility/pretrain-v0/train"
     # label = "gait-conditioned-agility/pretrain-go2/train"
-    label = "gait-conditioned-agility/2024-12-10/train"
+    label = "gait-conditioned-agility/2025-02-16/train"
 
     # Start Sim
     env, policy = load_env(label, headless=headless)
@@ -269,14 +273,14 @@ def interact_go2(headless=False):
         env.commands[:, 0] = x_vel_cmd  # Forward/backward velocity
         env.commands[:, 1] = y_vel_cmd  # Lateral velocity
         env.commands[:, 2] = yaw_vel_cmd  # Yaw rate
-        env.commands[:, 3] = body_height_cmd
-        env.commands[:, 4] = step_frequency_cmd
-        env.commands[:, 5:8] = gait
-        env.commands[:, 8] = 0.5
-        env.commands[:, 9] = footswing_height_cmd
-        env.commands[:, 10] = pitch_cmd
-        env.commands[:, 11] = roll_cmd
-        env.commands[:, 12] = stance_width_cmd
+        # env.commands[:, 3] = body_height_cmd
+        # env.commands[:, 4] = step_frequency_cmd
+        # env.commands[:, 5:8] = gait
+        # env.commands[:, 8] = 0.5
+        # env.commands[:, 9] = footswing_height_cmd
+        # env.commands[:, 10] = pitch_cmd
+        # env.commands[:, 11] = roll_cmd
+        # env.commands[:, 12] = stance_width_cmd
 
         obs, rew, done, info = env.step(actions)
         

@@ -61,12 +61,16 @@ def load_env(label, headless=False):
 
     Cfg.env.num_recording_envs = 1
     Cfg.env.num_envs = 1
-    Cfg.terrain.num_rows = 50
-    Cfg.terrain.num_cols = 50
+    Cfg.terrain.num_rows = 1
+    Cfg.terrain.num_cols = 1
     Cfg.terrain.border_size = 0
     Cfg.terrain.center_robots = True
     Cfg.terrain.center_span = 1
     Cfg.terrain.teleport_robots = True
+    
+    Cfg.terrain.terrain_noise = False
+    Cfg.terrain.terrain_noise_magnitude = 0.05
+    Cfg.terrain.terrain_smoothness = 0.05
 
     Cfg.domain_rand.lag_timesteps = 1
     Cfg.domain_rand.randomize_lag_timesteps = True
@@ -99,12 +103,12 @@ def play_go2(headless=True):
 
     # label = "gait-conditioned-agility/pretrain-v0/train"
     # label = "gait-conditioned-agility/pretrain-go2/train"
-    label = "gait-conditioned-agility/2024-12-11/train"
+    label = "gait-conditioned-agility/2025-02-16/train"
 
 
     env, policy = load_env(label, headless=headless)
 
-    num_eval_steps = 1000 #250
+    num_eval_steps = 100000 #250
     gaits = {"pronking": [0, 0, 0],
              "trotting": [0.5, 0, 0],
              "bounding": [0, 0.5, 0],
@@ -138,20 +142,20 @@ def play_go2(headless=True):
         env.commands[:, 0] = x_vel_cmd
         env.commands[:, 1] = y_vel_cmd
         env.commands[:, 2] = yaw_vel_cmd
-        env.commands[:, 3] = body_height_cmd
-        env.commands[:, 4] = step_frequency_cmd
-        env.commands[:, 5:8] = gait
-        env.commands[:, 8] = 0.5
-        env.commands[:, 9] = footswing_height_cmd
-        env.commands[:, 10] = pitch_cmd
-        env.commands[:, 11] = roll_cmd
-        env.commands[:, 12] = stance_width_cmd
+        # env.commands[:, 3] = body_height_cmd
+        # env.commands[:, 4] = step_frequency_cmd
+        # env.commands[:, 5:8] = gait
+        # env.commands[:, 8] = 0.5
+        # env.commands[:, 9] = footswing_height_cmd
+        # env.commands[:, 10] = pitch_cmd
+        # env.commands[:, 11] = roll_cmd
+        # env.commands[:, 12] = stance_width_cmd
         obs, rew, done, info = env.step(actions)
 
         measured_x_vels[i] = env.base_lin_vel[0, 0]
         joint_positions[i] = env.dof_pos[0, :].cpu()
 
-        for j in range(19): # 19
+        for j in range(len(env.reward_names)): # 19
             name = env.reward_names[j]
             rew = env.reward_functions[j]() * env.reward_scales[name]
             reward_buffer[i][j] = rew.detach().cpu().numpy()
@@ -255,7 +259,7 @@ def play_go2(headless=True):
 
 
     plt.tight_layout()
-    plt.savefig("Reward_plot.png")
+    # plt.savefig("Reward_plot.png")
 
     
 
