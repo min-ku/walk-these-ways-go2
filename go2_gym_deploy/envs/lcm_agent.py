@@ -92,6 +92,7 @@ class LCMAgent():
                 if self.cfg["control"]["control_type"] in ["P", "V"]:
                     print(f"PD gain of joint {joint_name} were not defined, setting them to zero")
 
+        print(f"Control Type: {self.cfg['control']['control_type']}")
         print(f"p_gains: {self.p_gains}")
         print(f"d_gains: {self.d_gains}")
 
@@ -173,14 +174,13 @@ class LCMAgent():
         if "observe_contact_states" in self.cfg["env"].keys() and self.cfg["env"]["observe_contact_states"]:
             ob = np.concatenate((ob, self.contact_state.reshape(1, -1)), axis=-1)
 
-        if "terrain" in self.cfg.keys() and self.cfg["terrain"]["measure_heights"]:
-            robot_height = 0.25
-            self.measured_heights = np.zeros(
-                (len(self.cfg["terrain"]["measured_points_x"]), len(self.cfg["terrain"]["measured_points_y"]))).reshape(
-                1, -1)
-            heights = np.clip(robot_height - 0.5 - self.measured_heights, -1, 1.) * self.obs_scales["height_measurements"]
-            ob = np.concatenate((ob, heights), axis=1)
-
+        #if "terrain" in self.cfg.keys() and self.cfg["terrain"]["measure_heights"]:
+        #    robot_height = 0.25
+        #    self.measured_heights = np.zeros(
+        #        (len(self.cfg["terrain"]["measured_points_x"]), len(self.cfg["terrain"]["measured_points_y"]))).reshape(
+        #        1, -1)
+        #    heights = np.clip(robot_height - 0.5 - self.measured_heights, -1, 1.) * self.obs_scales["height_measurements"]
+        #    ob = np.concatenate((ob, heights), axis=1)
 
         return torch.tensor(ob, device=self.device).float()
 
@@ -214,7 +214,7 @@ class LCMAgent():
 
 
         self.torques = (self.joint_pos_target - self.dof_pos) * self.p_gains + (self.joint_vel_target - self.dof_vel) * self.d_gains
-        # Pass the action output by the neural network to c++ sdk by lcm
+        # 由lcm将神经网络输出的action传入c++ sdk
         lc.publish("pd_plustau_targets", command_for_robot.encode())
 
     def reset(self):
@@ -237,33 +237,34 @@ class LCMAgent():
         obs = self.get_obs()
 
         # clock accounting
-        frequencies = self.commands[:, 4]
-        phases = self.commands[:, 5]
-        offsets = self.commands[:, 6]
-        if self.num_commands == 8:
-            bounds = 0
-            durations = self.commands[:, 7]
-        else:
-            bounds = self.commands[:, 7]
-            durations = self.commands[:, 8]
-        self.gait_indices = torch.remainder(self.gait_indices + self.dt * frequencies, 1.0)
+        if self.num_commands > 4:
+            frequencies = self.commands[:, 4]
+            phases = self.commands[:, 5]
+            offsets = self.commands[:, 6]
+            self.gait_indices = torch.remainder(self.gait_indices + self.dt * frequencies, 1.0)
+            if self.num_commands == 8:
+                bounds = 0
+                durations = self.commands[:, 7]
+            else:
+                bounds = self.commands[:, 7]
+                durations = self.commands[:, 8]
 
-        if "pacing_offset" in self.cfg["commands"] and self.cfg["commands"]["pacing_offset"]:
-            self.foot_indices = [self.gait_indices + phases + offsets + bounds,
-                                 self.gait_indices + bounds,
-                                 self.gait_indices + offsets,
-                                 self.gait_indices + phases]
-        else:
-            self.foot_indices = [self.gait_indices + phases + offsets + bounds,
-                                 self.gait_indices + offsets,
-                                 self.gait_indices + bounds,
-                                 self.gait_indices + phases]
-        self.clock_inputs[:, 0] = torch.sin(2 * np.pi * self.foot_indices[0])
-        self.clock_inputs[:, 1] = torch.sin(2 * np.pi * self.foot_indices[1])
-        self.clock_inputs[:, 2] = torch.sin(2 * np.pi * self.foot_indices[2])
-        self.clock_inputs[:, 3] = torch.sin(2 * np.pi * self.foot_indices[3])
+            if "pacing_offset" in self.cfg["commands"] and self.cfg["commands"]["pacing_offset"]:
+                self.foot_indices = [self.gait_indices + phases + offsets + bounds,
+                                     self.gait_indices + bounds,
+                                     self.gait_indices + offsets,
+                                     self.gait_indices + phases]
+            else:
+                self.foot_indices = [self.gait_indices + phases + offsets + bounds,
+                                     self.gait_indices + offsets,
+                                     self.gait_indices + bounds,
+                                     self.gait_indices + phases]
+            self.clock_inputs[:, 0] = torch.sin(2 * np.pi * self.foot_indices[0])
+            self.clock_inputs[:, 1] = torch.sin(2 * np.pi * self.foot_indices[1])
+            self.clock_inputs[:, 2] = torch.sin(2 * np.pi * self.foot_indices[2])
+            self.clock_inputs[:, 3] = torch.sin(2 * np.pi * self.foot_indices[3])
 
-# Comment out the following camera related code
+# 注释掉了下面camera相关代码
 # --------------------------------------------------------------------
         # images = {'front': self.se.get_camera_front(),
         #           'bottom': self.se.get_camera_bottom(),
@@ -292,6 +293,7 @@ class LCMAgent():
                  "body_linear_vel_cmd": self.commands[:, 0:2],
                  "body_angular_vel_cmd": self.commands[:, 2:],
                  "privileged_obs": None,
+                # "tau_est": self.se.tau_est,
                 #  -------------------------------------------
                 #  "camera_image_front": images['front'],
                 #  "camera_image_bottom": images['bottom'],

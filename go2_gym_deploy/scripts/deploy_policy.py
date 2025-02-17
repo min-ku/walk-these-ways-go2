@@ -10,20 +10,21 @@ from go2_gym_deploy.utils.command_profile import *
 
 import pathlib
 
-# Standard format for lcm multicast communication
 lc = lcm.LCM("udpm://239.255.76.67:7667?ttl=255")
 
 def load_and_run_policy(label, experiment_name, max_vel=1.0, max_yaw_vel=1.0):
     # load agent
     dirs = glob.glob(f"../../runs/{label}/*")
     logdir = sorted(dirs)[0]
+    print(logdir)
 
 # with open(logdir+"/parameters.pkl", 'rb') as file:
     with open(logdir+"/parameters.pkl", 'rb') as file:
         pkl_cfg = pkl.load(file)
         # print(pkl_cfg.keys())
         cfg = pkl_cfg["Cfg"]
-        # print(cfg.keys())
+        #print(cfg.keys())
+        #print(cfg)
 
     print('Config successfully loaded!')
 
@@ -78,11 +79,17 @@ def load_policy(logdir):
 
 
 if __name__ == '__main__':
-    # label = "gait-conditioned-agility/pretrain-v0/train"
-    label = "gait-conditioned-agility/pretrain-go2/train"
-
-    experiment_name = "example_experiment"
-
+    # label = "gait-conditioned-agility/2025-01-27/train" # 'actuator net' control type
+    #label = "gait-conditioned-agility/2025-01-24/train" # P control type
+    # label = "gait-conditioned-agility/pretrain-go2/train"
+    # label = "gait-conditioned-agility/2025-02-10/train" # Base
+    label = "gait-conditioned-agility/gaitfree/train"
+    
+    # experiment_name = "actuator"
+    # experiment_name = "P_data_new"
+    # experiment_name = "Base"
+    experiment_name = "GaitFree"
+    
     # default:
     # max_vel=3.5, max_yaw_vel=5.0
-    load_and_run_policy(label, experiment_name=experiment_name, max_vel=2.5, max_yaw_vel=5.0)
+    load_and_run_policy(label, experiment_name=experiment_name, max_vel=0.6, max_yaw_vel=0.6) # max_vel 2.5, max_yaw_vel = 5.0
