@@ -51,10 +51,10 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
     _.soft_dof_pos_limit = 0.9
     _.base_height_target = 0.25
 
-    _ = Cnfg.reward_scales
-    _.torques = -0.0002
+    # _ = Cnfg.reward_scales
+    # _.torques = -0.0002
     # _.action_rate = -0.01
-    _.dof_pos_limits = -10.0
+    # _.dof_pos_limits = -10.0
     # _.orientation = -5.
     # _.base_height = -30.
 
@@ -76,12 +76,12 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
     _ = Cnfg.commands
     _.heading_command = False
     _.resampling_time = 10.0
-    _.command_curriculum = True
+    _.command_curriculum = False
     _.num_lin_vel_bins = 30
     _.num_ang_vel_bins = 30
-    _.lin_vel_x = [-1.0, 1.0]
-    _.lin_vel_y = [-0.6, 0.6]
-    _.ang_vel_yaw = [-1.0, 1.0]
+    _.lin_vel_x = [-0.35, 0.35]
+    _.lin_vel_y = [-0.35, 0.35]
+    _.ang_vel_yaw = [-0.35, 0.35]
 
     _ = Cnfg.domain_rand
     _.randomize_base_mass = True

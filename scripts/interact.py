@@ -95,9 +95,9 @@ def load_env(label, headless=False):
     Cfg.terrain.center_span = 1
     Cfg.terrain.teleport_robots = True
     Cfg.env.episode_length_s = 999999
-    Cfg.terrain.terrain_noise = False
-    Cfg.terrain.terrain_noise_magnitude = 0.05
-    Cfg.terrain.terrain_smoothness = 0.05
+    Cfg.terrain.terrain_noise = True
+    Cfg.terrain.terrain_noise_magnitude = 0.1
+    Cfg.terrain.terrain_smoothness = 0.1
 
     Cfg.domain_rand.lag_timesteps = 6
     Cfg.domain_rand.randomize_lag_timesteps = True

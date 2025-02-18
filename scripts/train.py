@@ -108,8 +108,8 @@ def train_go2(headless=True):
     Cfg.terrain.center_span = 4
     Cfg.terrain.horizontal_scale = 0.10
 
-    Cfg.terrain.terrain_noise_magnitude = 0.05
-    Cfg.terrain.terrain_smoothness = 0.05
+    Cfg.terrain.terrain_noise_magnitude = 0.1
+    Cfg.terrain.terrain_smoothness = 0.1
     Cfg.terrain.terrain_noise = True
 
     Cfg.rewards.use_terminal_foot_height = False
@@ -121,9 +121,9 @@ def train_go2(headless=True):
     Cfg.commands.resampling_time = 10
 
     # Cfg.reward_scales.feet_contact_forces = 0.0
-    Cfg.reward_scales.feet_slip = -0.04
-    Cfg.reward_scales.action_smoothness_1 = -0.1
-    Cfg.reward_scales.action_smoothness_2 = -0.1
+    # Cfg.reward_scales.feet_slip = -0.04
+    # Cfg.reward_scales.action_smoothness_1 = -0.1
+    # Cfg.reward_scales.action_smoothness_2 = -0.1
     # Cfg.reward_scales.dof_vel = -1e-4
     # Cfg.reward_scales.dof_pos = -0.0
     # Cfg.reward_scales.jump = 0.0 # 10.0
@@ -151,13 +151,13 @@ def train_go2(headless=True):
     # Cfg.reward_scales.collision = -5.0
 
     Cfg.rewards.reward_container_name = "CoRLRewards"
-    Cfg.rewards.only_positive_rewards = True
-    Cfg.rewards.only_positive_rewards_ji22_style = False
+    Cfg.rewards.only_positive_rewards = False
+    Cfg.rewards.only_positive_rewards_ji22_style = True
     # Cfg.rewards.sigma_rew_neg = 0.02
 
-    Cfg.commands.lin_vel_x = [-1.0, 1.0]
-    Cfg.commands.lin_vel_y = [-0.6, 0.6]
-    Cfg.commands.ang_vel_yaw = [-1.0, 1.0]
+    # Cfg.commands.lin_vel_x = [-1.0, 1.0]
+    # Cfg.commands.lin_vel_y = [-0.6, 0.6]
+    # Cfg.commands.ang_vel_yaw = [-1.0, 1.0]
     # Cfg.commands.body_height_cmd = [-0.25, 0.15]
     # Cfg.commands.gait_frequency_cmd_range = [2.0, 4.0]
     # Cfg.commands.gait_phase_cmd_range = [0.0, 1.0]
@@ -170,9 +170,9 @@ def train_go2(headless=True):
     # Cfg.commands.stance_width_range = [0.10, 0.45]
     # Cfg.commands.stance_length_range = [0.35, 0.45]
 
-    Cfg.commands.limit_vel_x = [-5.0, 5.0]
-    Cfg.commands.limit_vel_y = [-0.6, 0.6]
-    Cfg.commands.limit_vel_yaw = [-5.0, 5.0]
+    # Cfg.commands.limit_vel_x = [-5.0, 5.0]
+    # Cfg.commands.limit_vel_y = [-0.6, 0.6]
+    # Cfg.commands.limit_vel_yaw = [-5.0, 5.0]
     # Cfg.commands.limit_body_height = [-0.25, 0.15]
     # Cfg.commands.limit_gait_frequency = [2.0, 4.0]
     # Cfg.commands.limit_gait_phase = [0.0, 1.0]

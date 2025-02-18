@@ -98,7 +98,7 @@ class CoRLRewards:
 
     def _reward_stand_still(self):
         # Penalize motion at zero commands
-        return torch.sum(torch.abs(self.env.dof_pos - self.env.default_dof_pos), dim=1) * (torch.norm(self.env.commands[:, :2], dim=1) < 0.1)
+        return torch.sum(torch.abs(self.env.dof_pos - self.env.default_dof_pos), dim=1) * (torch.norm(self.env.commands[:, :2], dim=1) < 0.05)
 
     def _reward_feet_contact_forces(self):
         # penalize high contact forces
