@@ -126,7 +126,7 @@ class Terrain:
         if cfg.terrain_noise:
             terrain_utils.random_uniform_terrain(terrain, min_height=-cfg.terrain_noise_magnitude, max_height=cfg.terrain_noise_magnitude,
                                             step=self.cfg.terrain_smoothness, downsampled_scale=0.2)
-            print(self.cfg.terrain_noise)
+
         return terrain
 
     def add_terrain_to_map(self, cfg, terrain, row, col):
