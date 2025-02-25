@@ -96,8 +96,8 @@ def train_go2(headless=True):
     Cfg.terrain.border_size = 0.0
     # Default value = "trimesh"
     Cfg.terrain.mesh_type = "trimesh"  # "heightfield" # none, plane, heightfield or trimesh
-    Cfg.terrain.num_cols = 30
-    Cfg.terrain.num_rows = 30
+    Cfg.terrain.num_cols = 10
+    Cfg.terrain.num_rows = 10
     Cfg.terrain.terrain_width = 5.0
     Cfg.terrain.terrain_length = 5.0
     Cfg.terrain.x_init_range = 0.2
@@ -108,8 +108,8 @@ def train_go2(headless=True):
     Cfg.terrain.center_span = 4
     Cfg.terrain.horizontal_scale = 0.10
 
-    Cfg.terrain.terrain_noise_magnitude = 0.1
-    Cfg.terrain.terrain_smoothness = 0.1
+    Cfg.terrain.terrain_noise_magnitude = 0.12
+    Cfg.terrain.terrain_smoothness = 0.05
     Cfg.terrain.terrain_noise = True
 
     Cfg.rewards.use_terminal_foot_height = False
@@ -151,9 +151,9 @@ def train_go2(headless=True):
     # Cfg.reward_scales.collision = -5.0
 
     Cfg.rewards.reward_container_name = "CoRLRewards"
-    Cfg.rewards.only_positive_rewards = False
-    Cfg.rewards.only_positive_rewards_ji22_style = True
-    # Cfg.rewards.sigma_rew_neg = 0.02
+    Cfg.rewards.only_positive_rewards = True
+    Cfg.rewards.only_positive_rewards_ji22_style = False
+    Cfg.rewards.sigma_rew_neg = 0.02
 
     # Cfg.commands.lin_vel_x = [-1.0, 1.0]
     # Cfg.commands.lin_vel_y = [-0.6, 0.6]

@@ -79,9 +79,9 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
     _.command_curriculum = False
     _.num_lin_vel_bins = 30
     _.num_ang_vel_bins = 30
-    _.lin_vel_x = [-0.35, 0.35]
+    _.lin_vel_x = [-0.5, 0.5]
     _.lin_vel_y = [-0.35, 0.35]
-    _.ang_vel_yaw = [-0.35, 0.35]
+    _.ang_vel_yaw = [-0.5, 0.5]
 
     _ = Cnfg.domain_rand
     _.randomize_base_mass = True
