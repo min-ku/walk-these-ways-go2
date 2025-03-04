@@ -87,7 +87,7 @@ class CoRLRewards:
         first_contact = (self.env.feet_air_time > 0.) * contact_filt
         self.env.feet_air_time += self.env.dt
         rew_airTime = torch.sum((self.env.feet_air_time - 0.5) * first_contact, dim=1) # reward only on first contact with the ground
-        rew_airTime *= torch.norm(self.env.commands[:, :2], dim=1) > 0.05 #no reward for zero command
+        rew_airTime *= torch.norm(self.env.commands[:, :2], dim=1) > 0.1 #no reward for zero command
         self.env.feet_air_time *= ~contact_filt
         return rew_airTime
 

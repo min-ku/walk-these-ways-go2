@@ -142,7 +142,7 @@ def interact_go2(headless=False):
         
     # label = "gait-conditioned-agility/pretrain-v0/train"
     # label = "gait-conditioned-agility/pretrain-go2/train"
-    label = "gait-conditioned-agility/2025-02-16/train"
+    label = "gait-conditioned-agility/2025-03-02/train"
 
     # Start Sim
     env, policy = load_env(label, headless=headless)

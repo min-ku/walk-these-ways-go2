@@ -51,10 +51,10 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
     _.soft_dof_pos_limit = 0.9
     _.base_height_target = 0.25
 
-    # _ = Cnfg.reward_scales
-    # _.torques = -0.0002
+    _ = Cnfg.reward_scales
+    _.torques = -0.0002
     # _.action_rate = -0.01
-    # _.dof_pos_limits = -10.0
+    _.dof_pos_limits = -10.0
     # _.orientation = -5.
     # _.base_height = -30.
 
