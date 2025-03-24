@@ -28,8 +28,8 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
 
     _ = Cnfg.control
     _.control_type = 'P' # P
-    _.stiffness = {'joint': 20.}  # [N*m/rad]
-    _.damping = {'joint': 0.5}  # [N*m*s/rad]
+    _.stiffness = {'joint': 25.}  # 20 [N*m/rad]
+    _.damping = {'joint': 0.6}  # 0.5 [N*m*s/rad]
     # action scale: target angle = actionScale * action + defaultAngle
     _.action_scale = 0.25
     _.hip_scale_reduction = 0.5
@@ -76,12 +76,12 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
     _ = Cnfg.commands
     _.heading_command = False
     _.resampling_time = 10.0
-    _.command_curriculum = False
+    _.command_curriculum = True
     _.num_lin_vel_bins = 30
     _.num_ang_vel_bins = 30
-    _.lin_vel_x = [-0.5, 0.5]
-    _.lin_vel_y = [-0.35, 0.35]
-    _.ang_vel_yaw = [-0.5, 0.5]
+    _.lin_vel_x = [-1.0, 1.0]
+    _.lin_vel_y = [-0.6, 0.6]
+    _.ang_vel_yaw = [-1.0, 1.0]
 
     _ = Cnfg.domain_rand
     _.randomize_base_mass = True

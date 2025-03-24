@@ -230,8 +230,6 @@ class LeggedRobot(BaseTask):
             for curriculum, category in zip(self.curricula, self.category_names):
                 self.extras[f"curriculum/distribution"][f"weights_{category}"] = curriculum.weights
                 self.extras[f"curriculum/distribution"][f"grid_{category}"] = curriculum.grid
-        else:
-            self.extras["env_bins"] = torch.Tensor(self.env_command_bins)[:self.num_train_envs]
         if self.cfg.env.send_timeouts:
             self.extras["time_outs"] = self.time_out_buf[:self.num_train_envs]
 
@@ -1409,7 +1407,6 @@ class LeggedRobot(BaseTask):
             if scale == 0:
                 self.reward_scales.pop(key)
             else:
-                print(key)
                 self.reward_scales[key] *= self.dt
         # prepare list of functions
         self.reward_functions = []

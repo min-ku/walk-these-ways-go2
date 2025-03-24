@@ -18,7 +18,7 @@ def train_go2(headless=True):
 
     config_go2(Cfg)
 
-    Cfg.env.num_envs = 1
+    Cfg.env.num_envs = 4000
 
     Cfg.commands.num_lin_vel_bins = 30
     Cfg.commands.num_ang_vel_bins = 30
@@ -44,8 +44,8 @@ def train_go2(headless=True):
     Cfg.domain_rand.gravity_range = [-1.0, 1.0]
     Cfg.domain_rand.gravity_rand_interval_s = 8.0
     Cfg.domain_rand.gravity_impulse_duration = 0.99
-    Cfg.domain_rand.randomize_com_displacement = False
-    Cfg.domain_rand.com_displacement_range = [-0.15, 0.15]
+    Cfg.domain_rand.randomize_com_displacement = True # False
+    Cfg.domain_rand.com_displacement_range = [-0.05, 0.05]
     Cfg.domain_rand.randomize_ground_friction = True
     Cfg.domain_rand.ground_friction_range = [0.0, 0.0]
     Cfg.domain_rand.randomize_motor_strength = True
@@ -96,14 +96,14 @@ def train_go2(headless=True):
     Cfg.terrain.border_size = 0.0
     # Default value = "trimesh"
     Cfg.terrain.mesh_type = "trimesh"  # "heightfield" # none, plane, heightfield or trimesh
-    Cfg.terrain.num_cols = 3
-    Cfg.terrain.num_rows = 3
+    Cfg.terrain.num_cols = 10
+    Cfg.terrain.num_rows = 10
     Cfg.terrain.terrain_width = 5.0
     Cfg.terrain.terrain_length = 5.0
     Cfg.terrain.x_init_range = 0.2
     Cfg.terrain.y_init_range = 0.2
     Cfg.terrain.teleport_thresh = 0.3
-    Cfg.terrain.teleport_robots = False
+    Cfg.terrain.teleport_robots = True
     Cfg.terrain.center_robots = True
     Cfg.terrain.center_span = 4
     Cfg.terrain.horizontal_scale = 0.10
@@ -155,8 +155,8 @@ def train_go2(headless=True):
     Cfg.rewards.only_positive_rewards_ji22_style = False
     Cfg.rewards.sigma_rew_neg = 0.02
 
-    Cfg.commands.lin_vel_x = [-1.0, 1.0]
-    Cfg.commands.lin_vel_y = [-0.4, 0.4]
+    Cfg.commands.lin_vel_x = [-0.5, 0.5]
+    Cfg.commands.lin_vel_y = [-0.5, 0.5]
     Cfg.commands.ang_vel_yaw = [-0.5, 0.5]
     # Cfg.commands.body_height_cmd = [-0.25, 0.15]
     # Cfg.commands.gait_frequency_cmd_range = [2.0, 4.0]
@@ -170,8 +170,8 @@ def train_go2(headless=True):
     # Cfg.commands.stance_width_range = [0.10, 0.45]
     # Cfg.commands.stance_length_range = [0.35, 0.45]
 
-    Cfg.commands.limit_vel_x = [-2.0, 2.0]
-    Cfg.commands.limit_vel_y = [-0.8, 0.8]
+    Cfg.commands.limit_vel_x = [-1., 1.]
+    Cfg.commands.limit_vel_y = [-1., 1.]
     Cfg.commands.limit_vel_yaw = [-1.0, 1.0]
     # Cfg.commands.limit_body_height = [-0.25, 0.15]
     # Cfg.commands.limit_gait_frequency = [2.0, 4.0]
@@ -215,7 +215,7 @@ def train_go2(headless=True):
     if resume_training:
       import glob
       RunnerArgs.resume = True
-      RunnerArgs.resume_curriculum = False
+      RunnerArgs.resume_curriculum = True
       label = "gait-conditioned-agility/2025-03-21/train" # Change to the latest folder
       dirs = glob.glob(f"./runs/{label}/*")
       logdir = sorted(dirs)[0]
@@ -268,4 +268,4 @@ if __name__ == '__main__':
                 """, filename=".charts.yml", dedent=True)
 
     # to see the environment rendering, set headless=False
-    train_go2(headless=False)
+    train_go2(headless=True)
