@@ -216,7 +216,7 @@ def train_go2(headless=True):
       import glob
       RunnerArgs.resume = True
       RunnerArgs.resume_curriculum = False
-      label = "gait-conditioned-agility/2025-03-23/train" # Change to the latest folder
+      label = "gait-conditioned-agility/2025-03-21/train" # Change to the latest folder
       dirs = glob.glob(f"./runs/{label}/*")
       logdir = sorted(dirs)[0]
       RunnerArgs.resume_path = logdir[1:]
