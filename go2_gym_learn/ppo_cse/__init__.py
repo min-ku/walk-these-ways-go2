@@ -82,7 +82,8 @@ class Runner:
             weight_path = '.' + RunnerArgs.resume_path + "/checkpoints/ac_weights_last.pt"
             weights = torch.load(weight_path)
             actor_critic.load_state_dict(state_dict=weights)
-
+            # for name, param in actor_critic.state_dict().items():
+            #     print(f"Layer: {name}\n{param}\n")
             if hasattr(self.env, "curricula") and RunnerArgs.resume_curriculum:
                 print("Resume curriculum")
                 curriculum_path = os.getcwd() + RunnerArgs.resume_path + "/curriculum/distribution.pkl"

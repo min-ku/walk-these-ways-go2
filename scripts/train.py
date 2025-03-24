@@ -18,7 +18,7 @@ def train_go2(headless=True):
 
     config_go2(Cfg)
 
-    Cfg.env.num_envs = 4000
+    Cfg.env.num_envs = 1
 
     Cfg.commands.num_lin_vel_bins = 30
     Cfg.commands.num_ang_vel_bins = 30
@@ -28,7 +28,7 @@ def train_go2(headless=True):
     # Cfg.curriculum_thresholds.tracking_contacts_shaped_force = 0.90
 
     Cfg.commands.distributional_commands = False
-    Cfg.control.control_type = "actuator_net"
+    Cfg.control.control_type = "P"
 
     Cfg.domain_rand.lag_timesteps = 6
     Cfg.domain_rand.randomize_lag_timesteps = True
@@ -96,8 +96,8 @@ def train_go2(headless=True):
     Cfg.terrain.border_size = 0.0
     # Default value = "trimesh"
     Cfg.terrain.mesh_type = "trimesh"  # "heightfield" # none, plane, heightfield or trimesh
-    Cfg.terrain.num_cols = 10
-    Cfg.terrain.num_rows = 10
+    Cfg.terrain.num_cols = 3
+    Cfg.terrain.num_rows = 3
     Cfg.terrain.terrain_width = 5.0
     Cfg.terrain.terrain_length = 5.0
     Cfg.terrain.x_init_range = 0.2
@@ -108,9 +108,9 @@ def train_go2(headless=True):
     Cfg.terrain.center_span = 4
     Cfg.terrain.horizontal_scale = 0.10
 
-    Cfg.terrain.terrain_noise_magnitude = 0.12
+    Cfg.terrain.terrain_noise_magnitude = 0.05
     Cfg.terrain.terrain_smoothness = 0.05
-    Cfg.terrain.terrain_noise = True
+    Cfg.terrain.terrain_noise = False
 
     Cfg.rewards.use_terminal_foot_height = False
     Cfg.rewards.use_terminal_body_height = True
@@ -211,6 +211,16 @@ def train_go2(headless=True):
 
     env = VelocityTrackingEasyEnv(sim_device='cuda:0', headless=headless, cfg=Cfg)
 
+    resume_training = True
+    if resume_training:
+      import glob
+      RunnerArgs.resume = True
+      RunnerArgs.resume_curriculum = False
+      label = "gait-conditioned-agility/2025-03-23/train" # Change to the latest folder
+      dirs = glob.glob(f"./runs/{label}/*")
+      logdir = sorted(dirs)[0]
+      RunnerArgs.resume_path = logdir[1:]
+
     # log the experiment parameters
     logger.log_params(AC_Args=vars(AC_Args), PPO_Args=vars(PPO_Args), RunnerArgs=vars(RunnerArgs),
                       Cfg=vars(Cfg))
@@ -258,4 +268,4 @@ if __name__ == '__main__':
                 """, filename=".charts.yml", dedent=True)
 
     # to see the environment rendering, set headless=False
-    train_go2(headless=True)
+    train_go2(headless=False)

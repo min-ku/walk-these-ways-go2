@@ -25,13 +25,14 @@ def load(folder: str = '2024-12-22'):
                 try:
                     # Load the metrics data
                     metrics_data = logger.load_pkl(metrics_path)
-                    
-                    # Check if the length of the data is 1000
-                    if len(metrics_data) == 1000:
-                        loaded_metrics[variable_name] = metrics_data
-                        print(f"Loaded metrics from: {metrics_path}")
-                    else:
-                        print(f"Skipping {metrics_path} because length is not 1000")
+                    loaded_metrics[variable_name] = metrics_data
+                    print(f"Loaded metrics from: {metrics_path}")
+                    # # Check if the length of the data is 1000
+                    # if len(metrics_data) == 1000:
+                    #     loaded_metrics[variable_name] = metrics_data
+                    #     print(f"Loaded metrics from: {metrics_path}")
+                    # else:
+                    #     print(f"Skipping {metrics_path} because length is not 1000")
                 except Exception as e:
                     print(f"Error loading {metrics_path}: {e}")
     print(f"Number of Metrics: {len(loaded_metrics)}")
@@ -156,7 +157,7 @@ def multiple_plot_std(loaded_metrics: dict):
     plt.show()
 
 if __name__ == '__main__':
-    loaded_metrics = load(folder = '2024-12-22')
+    loaded_metrics = load(folder = '2025-03-15')
     # single_plot(name = "235534_132056", loaded_metrics=loaded_metrics)
-    # multiple_plot(loaded_metrics=loaded_metrics)
+    multiple_plot(loaded_metrics=loaded_metrics)
     # multiple_plot_std(loaded_metrics=loaded_metrics)

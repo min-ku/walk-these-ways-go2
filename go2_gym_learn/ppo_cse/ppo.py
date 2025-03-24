@@ -40,6 +40,8 @@ class PPO:
         # PPO components
         self.actor_critic = actor_critic
         self.actor_critic.to(device)
+        for name, param in actor_critic.state_dict().items():
+            print(f"Layer: {name}\n{param}\n")
         self.storage = None  # initialized later
         self.optimizer = optim.Adam(self.actor_critic.parameters(), lr=PPO_Args.learning_rate)
         self.adaptation_module_optimizer = optim.Adam(self.actor_critic.parameters(),
