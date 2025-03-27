@@ -27,9 +27,9 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
     }
 
     _ = Cnfg.control
-    _.control_type = 'P' # P
-    _.stiffness = {'joint': 25.}  # 20 [N*m/rad]
-    _.damping = {'joint': 0.6}  # 0.5 [N*m*s/rad]
+    _.control_type = 'actuator_net' # P
+    _.stiffness = {'joint': 40.}  # 20 [N*m/rad]
+    _.damping = {'joint': 0.7}  # 0.5 [N*m*s/rad]
     # action scale: target angle = actionScale * action + defaultAngle
     _.action_scale = 0.25
     _.hip_scale_reduction = 0.5
@@ -52,7 +52,7 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
     _.base_height_target = 0.25
 
     _ = Cnfg.reward_scales
-    _.torques = -0.0002
+    _.torques = -0.0003
     # _.action_rate = -0.01
     _.dof_pos_limits = -10.0
     # _.orientation = -5.

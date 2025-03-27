@@ -297,8 +297,8 @@ class Cfg(PrefixProto, cli=False):
 
     class reward_scales(ParamsProto, cli=False):
         termination = -0.0
-        tracking_lin_vel = 1.25 #1.0
-        tracking_ang_vel = 0.6 #0.5
+        tracking_lin_vel = 1.0 #1.0
+        tracking_ang_vel = 0.5 #0.5
         lin_vel_z = -2.0
         ang_vel_xy = -0.05
         orientation = -0.
@@ -310,7 +310,7 @@ class Cfg(PrefixProto, cli=False):
         collision = -1.
         feet_stumble = -0.0
         action_rate = -0.01
-        stand_still = -0.05  #-0.01
+        stand_still = -0.01  #-0.01
 
         feet_contact_forces = 0.
         tracking_lin_vel_lat = 0.
