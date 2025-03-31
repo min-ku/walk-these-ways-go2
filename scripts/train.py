@@ -18,7 +18,7 @@ def train_go2(headless=True):
 
     config_go2(Cfg)
 
-    Cfg.env.num_envs = 2500
+    Cfg.env.num_envs = 1000
 
     Cfg.commands.num_lin_vel_bins = 30
     Cfg.commands.num_ang_vel_bins = 30
@@ -39,7 +39,7 @@ def train_go2(headless=True):
     Cfg.domain_rand.randomize_restitution = True
     Cfg.domain_rand.restitution_range = [0.0, 0.4]
     Cfg.domain_rand.randomize_base_mass = True
-    Cfg.domain_rand.added_mass_range = [-1.0, 3.0]
+    Cfg.domain_rand.added_mass_range = [-1.0, 1.0] # [-1.0, 3.0]
     Cfg.domain_rand.randomize_gravity = True
     Cfg.domain_rand.gravity_range = [-1.0, 1.0]
     Cfg.domain_rand.gravity_rand_interval_s = 8.0
@@ -47,7 +47,7 @@ def train_go2(headless=True):
     Cfg.domain_rand.randomize_com_displacement = True # False
     Cfg.domain_rand.com_displacement_range = [-0.05, 0.05]
     Cfg.domain_rand.randomize_ground_friction = True
-    Cfg.domain_rand.ground_friction_range = [0.05, 4.5] # [0.0, 0.0]
+    Cfg.domain_rand.ground_friction_range = [0.0, 0.0]
     Cfg.domain_rand.randomize_motor_strength = True
     Cfg.domain_rand.motor_strength_range = [0.9, 1.1]
     Cfg.domain_rand.randomize_motor_offset = True
@@ -98,8 +98,8 @@ def train_go2(headless=True):
     Cfg.terrain.mesh_type = "trimesh"  # "heightfield" # none, plane, heightfield or trimesh
     Cfg.terrain.num_cols = 10
     Cfg.terrain.num_rows = 10
-    Cfg.terrain.terrain_width = 1.5
-    Cfg.terrain.terrain_length = 1.5
+    Cfg.terrain.terrain_width = 2
+    Cfg.terrain.terrain_length = 2
     Cfg.terrain.x_init_range = 0.2
     Cfg.terrain.y_init_range = 0.2
     Cfg.terrain.teleport_thresh = 0.3
@@ -215,8 +215,8 @@ def train_go2(headless=True):
     if resume_training:
       import glob
       RunnerArgs.resume = True
-      RunnerArgs.resume_curriculum = True
-      label = "gait-conditioned-agility/2025-03-21/train" # Change to the latest folder
+      RunnerArgs.resume_curriculum = False
+      label = "gait-conditioned-agility/2025-03-28/train" # Change to the latest folder
       dirs = glob.glob(f"./runs/{label}/*")
       logdir = sorted(dirs)[0]
       RunnerArgs.resume_path = logdir[1:]
@@ -228,7 +228,7 @@ def train_go2(headless=True):
     env = HistoryWrapper(env)
     gpu_id = 0
     runner = Runner(env, device=f"cuda:{gpu_id}")
-    runner.learn(num_learning_iterations=10000, init_at_random_ep_len=True, eval_freq=200)
+    runner.learn(num_learning_iterations=10000, init_at_random_ep_len=True, eval_freq=100)
 
 
 if __name__ == '__main__':
