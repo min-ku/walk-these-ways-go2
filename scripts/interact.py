@@ -59,6 +59,7 @@ def load_policy(logdir):
 def load_env(label, headless=False):
     dirs = glob.glob(f"./runs/{label}/*")
     logdir = sorted(dirs)[0]
+    print(logdir)
 
     with open(logdir + "/parameters.pkl", 'rb') as file:
         pkl_cfg = pkl.load(file)
@@ -79,8 +80,8 @@ def load_env(label, headless=False):
     Cfg.domain_rand.randomize_motor_offset = False
     Cfg.domain_rand.randomize_motor_strength = False
     Cfg.domain_rand.randomize_friction_indep = False
-    Cfg.domain_rand.randomize_ground_friction = True
-    Cfg.domain_rand.ground_friction_range = [30, 40.0]
+    Cfg.domain_rand.randomize_ground_friction = False
+    # Cfg.domain_rand.ground_friction_range = [30, 40.0]
     Cfg.domain_rand.randomize_base_mass = False
     Cfg.domain_rand.randomize_Kd_factor = False
     Cfg.domain_rand.randomize_Kp_factor = False
@@ -89,8 +90,9 @@ def load_env(label, headless=False):
 
     Cfg.env.num_recording_envs = 1
     Cfg.env.num_envs = 1
-    Cfg.terrain.num_rows = 2
-    Cfg.terrain.num_cols = 2
+    Cfg.terrain.mesh_type = "plane"
+    Cfg.terrain.num_rows = 5
+    Cfg.terrain.num_cols = 5
     Cfg.terrain.border_size = 0
     Cfg.terrain.center_robots = True
     Cfg.terrain.center_span = 1
@@ -103,7 +105,7 @@ def load_env(label, headless=False):
     Cfg.domain_rand.lag_timesteps = 6
     Cfg.domain_rand.randomize_lag_timesteps = True
     # default control_typw is "actuator_net", you can also switch it to "P" to enable joint PD control
-    Cfg.control.control_type = "P" # "actuator_net" 
+    Cfg.control.control_type = "actuator_net" 
     Cfg.asset.flip_visual_attachments = True
 
 
@@ -143,7 +145,7 @@ def interact_go2(headless=False):
         
     # label = "gait-conditioned-agility/pretrain-v0/train"
     # label = "gait-conditioned-agility/pretrain-go2/train"
-    label = "gait-conditioned-agility/2025-03-20/train"
+    label = "gait-conditioned-agility/2025-04-01/train"
 
     # Start Sim
     env, policy = load_env(label, headless=headless)

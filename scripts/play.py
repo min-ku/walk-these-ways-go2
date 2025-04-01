@@ -103,19 +103,19 @@ def play_go2(headless=True):
 
     # label = "gait-conditioned-agility/pretrain-v0/train"
     # label = "gait-conditioned-agility/pretrain-go2/train"
-    label = "gait-conditioned-agility/2025-02-16/train"
+    label = "gait-conditioned-agility/2025-04-01/train"
 
 
     env, policy = load_env(label, headless=headless)
 
-    num_eval_steps = 100000 #250
+    num_eval_steps = 100 #250
     gaits = {"pronking": [0, 0, 0],
              "trotting": [0.5, 0, 0],
              "bounding": [0, 0.5, 0],
              "pacing": [0, 0, 0.5]}
 
     # x_vel_cmd, y_vel_cmd, yaw_vel_cmd = 1.5, 0.0, 0.0
-    x_vel_cmd, y_vel_cmd, yaw_vel_cmd = .5, 0.0, 0.0
+    x_vel_cmd, y_vel_cmd, yaw_vel_cmd = 0.0, 0.0, 0.5
     body_height_cmd = 0.0
     step_frequency_cmd = 3.0 #3.0
     # gait = torch.tensor(gaits["pronking"])
@@ -156,6 +156,7 @@ def play_go2(headless=True):
         joint_positions[i] = env.dof_pos[0, :].cpu()
 
         for j in range(len(env.reward_names)): # 19
+            print(env.reward_names)
             name = env.reward_names[j]
             rew = env.reward_functions[j]() * env.reward_scales[name]
             reward_buffer[i][j] = rew.detach().cpu().numpy()
@@ -237,6 +238,10 @@ def play_go2(headless=True):
     "dof_pos_limits", "feet_slip", "feet_clearance_cmd_linear",
     "action_smoothness_1", "action_smoothness_2", "raibert_heuristic", "orientation_control"
     ]
+
+    reward_names = [['tracking_lin_vel', 'tracking_ang_vel', 'lin_vel_z', 'ang_vel_xy',
+                     'torques', 'dof_acc', 'base_height', 'feet_air_time', 'collision',
+                     'action_rate', 'stand_still', 'dof_pos_limits']]
 
     total_rewards_per_section = np.sum(reward_buffer, axis=(0, 2))
 

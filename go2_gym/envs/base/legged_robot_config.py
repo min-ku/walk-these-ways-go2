@@ -310,7 +310,9 @@ class Cfg(PrefixProto, cli=False):
         collision = -1.
         feet_stumble = -0.0
         action_rate = -0.01
-        stand_still = -0.01  #-0.01
+        stand_still = -0.2  #-0.01
+        
+        feet_slip = -0.04
 
         feet_contact_forces = 0.
         tracking_lin_vel_lat = 0.
@@ -324,7 +326,6 @@ class Cfg(PrefixProto, cli=False):
         energy_expenditure = 0.0
         survival = 0.0
         dof_pos_limits = 0.0
-        feet_slip = 0.
         feet_clearance_cmd_linear = 0.
         dof_pos = 0.
         action_smoothness_1 = 0.

@@ -78,17 +78,38 @@ class CoRLRewards:
         ang_vel_error = torch.square(self.env.commands[:, 2] - self.env.base_ang_vel[:, 2])
         return torch.exp(-ang_vel_error / self.env.cfg.rewards.tracking_sigma_yaw)
 
+    # def _reward_feet_air_time(self):
+    #     # Reward long steps
+    #     # Need to filter the contacts because the contact reporting of PhysX is unreliable on meshes
+    #     contact = self.env.contact_forces[:, self.env.feet_indices, 2] > 1.
+    #     contact_filt = torch.logical_or(contact, self.env.last_contacts) 
+    #     self.env.last_contacts = contact
+    #     first_contact = (self.env.feet_air_time > 0.) * contact_filt
+    #     self.env.feet_air_time += self.env.dt
+    #     rew_airTime = torch.sum((self.env.feet_air_time - 0.5) * first_contact, dim=1) # reward only on first contact with the ground
+    #     rew_airTime *= torch.norm(self.env.commands[:, :2], dim=1) > 0.1 #no reward for zero command
+    #     self.env.feet_air_time *= ~contact_filt
+    #     return rew_airTime
+
     def _reward_feet_air_time(self):
         # Reward long steps
-        # Need to filter the contacts because the contact reporting of PhysX is unreliable on meshes
+        # Need to filter the contacts because PhysX contact reporting is unreliable on meshes
         contact = self.env.contact_forces[:, self.env.feet_indices, 2] > 1.
-        contact_filt = torch.logical_or(contact, self.env.last_contacts) 
+        contact_filt = torch.logical_or(contact, self.env.last_contacts)
         self.env.last_contacts = contact
         first_contact = (self.env.feet_air_time > 0.) * contact_filt
+
+        mean_air_time = torch.mean(self.env.feet_air_time, dim=1, keepdim=True)
+        air_time_deviation = self.env.feet_air_time - mean_air_time
+        rew_airTime = torch.sum(torch.abs(air_time_deviation) * first_contact, dim=1)  # Ensure non-negative reward
+        penalty_imbalance = torch.sum(torch.abs(self.env.feet_air_time - mean_air_time), dim=1)
+        rew_airTime -= 0.1 * penalty_imbalance  # Penalize step asymmetry
+        rew_airTime *= torch.norm(self.env.commands[:, :2], dim=1) > 0.1  # No reward for zero command
+
+        # Update air time
         self.env.feet_air_time += self.env.dt
-        rew_airTime = torch.sum((self.env.feet_air_time - 0.5) * first_contact, dim=1) # reward only on first contact with the ground
-        rew_airTime *= torch.norm(self.env.commands[:, :2], dim=1) > 0.1 #no reward for zero command
-        self.env.feet_air_time *= ~contact_filt
+        self.env.feet_air_time *= ~contact_filt  # Reset air time for feet in contact
+
         return rew_airTime
 
     def _reward_stumble(self):

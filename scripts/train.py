@@ -39,7 +39,7 @@ def train_go2(headless=True):
     Cfg.domain_rand.randomize_restitution = True
     Cfg.domain_rand.restitution_range = [0.0, 0.4]
     Cfg.domain_rand.randomize_base_mass = True
-    Cfg.domain_rand.added_mass_range = [-1.0, 1.0] # [-1.0, 3.0]
+    Cfg.domain_rand.added_mass_range = [-1.0, 3.0]
     Cfg.domain_rand.randomize_gravity = True
     Cfg.domain_rand.gravity_range = [-1.0, 1.0]
     Cfg.domain_rand.gravity_rand_interval_s = 8.0
@@ -103,7 +103,7 @@ def train_go2(headless=True):
     Cfg.terrain.x_init_range = 0.2
     Cfg.terrain.y_init_range = 0.2
     Cfg.terrain.teleport_thresh = 0.3
-    Cfg.terrain.teleport_robots = False
+    Cfg.terrain.teleport_robots = True
     Cfg.terrain.center_robots = True
     Cfg.terrain.center_span = 4
     Cfg.terrain.horizontal_scale = 0.10
@@ -211,12 +211,12 @@ def train_go2(headless=True):
 
     env = VelocityTrackingEasyEnv(sim_device='cuda:0', headless=headless, cfg=Cfg)
 
-    resume_training = False
+    resume_training = True
     if resume_training:
       import glob
       RunnerArgs.resume = True
       RunnerArgs.resume_curriculum = False
-      label = "gait-conditioned-agility/2025-03-28/train" # Change to the latest folder
+      label = "gait-conditioned-agility/2025-04-01/train" # Change to the latest folder
       dirs = glob.glob(f"./runs/{label}/*")
       logdir = sorted(dirs)[0]
       RunnerArgs.resume_path = logdir[1:]
