@@ -65,7 +65,7 @@ class Cfg(PrefixProto, cli=False):
         horizontal_scale = 0.1  # [m] 0.1
         vertical_scale = 0.005  # [m]
         border_size = 0  # 25 # [m]
-        curriculum = True
+        curriculum = False
         static_friction = 1.0
         dynamic_friction = 1.0
         restitution = 0.0
@@ -73,7 +73,7 @@ class Cfg(PrefixProto, cli=False):
         terrain_noise = False
         # rough terrain only:
         terrain_smoothness = 0.005
-        measure_heights = True
+        measure_heights = False
         measured_points_x = [-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8] # 1mx1.6m rectangle (without center line)
         measured_points_y = [-0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5]
         selected = False  # select a unique terrain type and pass all arguments

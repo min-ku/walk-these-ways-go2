@@ -76,7 +76,7 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
     _ = Cnfg.commands
     _.heading_command = False
     _.resampling_time = 10.0
-    _.command_curriculum = True
+    _.command_curriculum = False
     _.num_lin_vel_bins = 30
     _.num_ang_vel_bins = 30
     _.lin_vel_x = [-1.0, 1.0]
