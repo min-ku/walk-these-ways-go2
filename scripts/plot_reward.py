@@ -157,7 +157,7 @@ def multiple_plot_std(loaded_metrics: dict):
     plt.show()
 
 if __name__ == '__main__':
-    loaded_metrics = load(folder = '2025-03-15')
+    loaded_metrics = load(folder = '2025-04-02')
     # single_plot(name = "235534_132056", loaded_metrics=loaded_metrics)
     multiple_plot(loaded_metrics=loaded_metrics)
     # multiple_plot_std(loaded_metrics=loaded_metrics)

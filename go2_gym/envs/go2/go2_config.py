@@ -29,7 +29,7 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
     _ = Cnfg.control
     _.control_type = 'actuator_net' # P
     _.stiffness = {'joint': 40.}  # 20 [N*m/rad]
-    _.damping = {'joint': 0.6}  # 0.5 [N*m*s/rad]
+    _.damping = {'joint': 1.0}  # 0.5 [N*m*s/rad]
     # action scale: target angle = actionScale * action + defaultAngle
     _.action_scale = 0.25
     _.hip_scale_reduction = 0.5
@@ -49,14 +49,34 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
 
     _ = Cnfg.rewards
     _.soft_dof_pos_limit = 0.9
-    _.base_height_target = 0.3 #0.25
+    _.base_height_target = 0.32 #0.25
 
     _ = Cnfg.reward_scales
-    _.torques = -0.00025
-    # _.action_rate = -0.01
+    _.tracking_lin_vel = 2.0
+    _.tracking_ang_vel = 1.
+    _.lin_vel_z = -4.0
+    _.ang_vel_xy = -0.1
+    _.stand_still = -0.1
+    _.torques = -0.0003
+    _.action_rate = -0.01
+    _.dof_acc = -2.5e-7
     _.dof_pos_limits = -10.0
-    # _.orientation = -5.
-    _.base_height = -30.
+    _.collision = -1
+    _.base_height = -10.
+    _.feet_stumble = -0.05
+    
+    _.upward = 0.5
+    _.has_contact = 0.5
+    _.foot_clearance = -0.5
+    _.foot_mirror = -0.05
+    _.foot_slide_up = -0.05
+
+    _.feet_contact_forces = -0.00015
+    _.orientation = -0.2
+    _.action_smoothness_1 = -0.01
+    _.action_smoothness_2 = -0.01
+
+
 
     _ = Cnfg.terrain
     _.mesh_type = 'trimesh'
@@ -76,11 +96,11 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
     _ = Cnfg.commands
     _.heading_command = False
     _.resampling_time = 10.0
-    _.command_curriculum = False
+    _.command_curriculum = True
     _.num_lin_vel_bins = 30
     _.num_ang_vel_bins = 30
     _.lin_vel_x = [-1.0, 1.0]
-    _.lin_vel_y = [-0.6, 0.6]
+    _.lin_vel_y = [-1.0, 1.0]
     _.ang_vel_yaw = [-1.0, 1.0]
 
     _ = Cnfg.domain_rand
@@ -94,11 +114,11 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
     _.restitution_range = [0.0, 1.0]
     _.restitution = 0.5  # default terrain restitution
     _.randomize_com_displacement = True
-    _.com_displacement_range = [-0.1, 0.1]
+    _.com_displacement_range = [-0.05, 0.05]
     _.randomize_motor_strength = True
     _.motor_strength_range = [0.9, 1.1]
     _.randomize_Kp_factor = False
-    _.Kp_factor_range = [0.8, 1.3]
+    _.Kp_factor_range = [0.9, 1.1]
     _.randomize_Kd_factor = False
-    _.Kd_factor_range = [0.5, 1.5]
+    _.Kd_factor_range = [0.9, 1.1]
     _.rand_interval_s = 6

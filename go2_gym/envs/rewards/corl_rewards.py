@@ -78,39 +78,39 @@ class CoRLRewards:
         ang_vel_error = torch.square(self.env.commands[:, 2] - self.env.base_ang_vel[:, 2])
         return torch.exp(-ang_vel_error / self.env.cfg.rewards.tracking_sigma_yaw)
 
-    # def _reward_feet_air_time(self):
-    #     # Reward long steps
-    #     # Need to filter the contacts because the contact reporting of PhysX is unreliable on meshes
-    #     contact = self.env.contact_forces[:, self.env.feet_indices, 2] > 1.
-    #     contact_filt = torch.logical_or(contact, self.env.last_contacts) 
-    #     self.env.last_contacts = contact
-    #     first_contact = (self.env.feet_air_time > 0.) * contact_filt
-    #     self.env.feet_air_time += self.env.dt
-    #     rew_airTime = torch.sum((self.env.feet_air_time - 0.5) * first_contact, dim=1) # reward only on first contact with the ground
-    #     rew_airTime *= torch.norm(self.env.commands[:, :2], dim=1) > 0.1 #no reward for zero command
-    #     self.env.feet_air_time *= ~contact_filt
-    #     return rew_airTime
-
     def _reward_feet_air_time(self):
         # Reward long steps
-        # Need to filter the contacts because PhysX contact reporting is unreliable on meshes
+        # Need to filter the contacts because the contact reporting of PhysX is unreliable on meshes
         contact = self.env.contact_forces[:, self.env.feet_indices, 2] > 1.
-        contact_filt = torch.logical_or(contact, self.env.last_contacts)
+        contact_filt = torch.logical_or(contact, self.env.last_contacts) 
         self.env.last_contacts = contact
         first_contact = (self.env.feet_air_time > 0.) * contact_filt
-
-        mean_air_time = torch.mean(self.env.feet_air_time, dim=1, keepdim=True)
-        air_time_deviation = self.env.feet_air_time - mean_air_time
-        rew_airTime = torch.sum(torch.abs(air_time_deviation) * first_contact, dim=1)  # Ensure non-negative reward
-        penalty_imbalance = torch.sum(torch.abs(self.env.feet_air_time - mean_air_time), dim=1)
-        rew_airTime -= 0.1 * penalty_imbalance  # Penalize step asymmetry
-        rew_airTime *= torch.norm(self.env.commands[:, :2], dim=1) > 0.1  # No reward for zero command
-
-        # Update air time
         self.env.feet_air_time += self.env.dt
-        self.env.feet_air_time *= ~contact_filt  # Reset air time for feet in contact
-
+        rew_airTime = torch.sum((self.env.feet_air_time - 0.5) * first_contact, dim=1) # reward only on first contact with the ground
+        rew_airTime *= torch.norm(self.env.commands[:, :2], dim=1) > 0.1 #no reward for zero command
+        self.env.feet_air_time *= ~contact_filt
         return rew_airTime
+
+    # def _reward_feet_air_time(self):
+    #     # Reward long steps
+    #     # Need to filter the contacts because PhysX contact reporting is unreliable on meshes
+    #     contact = self.env.contact_forces[:, self.env.feet_indices, 2] > 1.
+    #     contact_filt = torch.logical_or(contact, self.env.last_contacts)
+    #     self.env.last_contacts = contact
+    #     first_contact = (self.env.feet_air_time > 0.) * contact_filt
+
+    #     mean_air_time = torch.mean(self.env.feet_air_time, dim=1, keepdim=True)
+    #     air_time_deviation = self.env.feet_air_time - mean_air_time
+    #     rew_airTime = torch.sum(torch.abs(air_time_deviation) * first_contact, dim=1)  # Ensure non-negative reward
+    #     penalty_imbalance = torch.sum(torch.abs(self.env.feet_air_time - mean_air_time), dim=1)
+    #     rew_airTime -= 0.1 * penalty_imbalance  # Penalize step asymmetry
+    #     rew_airTime *= torch.norm(self.env.commands[:, :2], dim=1) > 0.1  # No reward for zero command
+
+    #     # Update air time
+    #     self.env.feet_air_time += self.env.dt
+    #     self.env.feet_air_time *= ~contact_filt  # Reset air time for feet in contact
+
+    #     return rew_airTime
 
     def _reward_stumble(self):
         # Penalize feet hitting vertical surfaces
@@ -184,73 +184,128 @@ class CoRLRewards:
         rew_contact_vel = torch.sum(near_ground * foot_velocities, dim=1)
         return rew_contact_vel
 
+    # def _reward_feet_clearance_cmd_linear(self):
+    #     phases = 1 - torch.abs(1.0 - torch.clip((self.env.foot_indices * 2.0) - 1.0, 0.0, 1.0) * 2.0)
+    #     foot_height = (self.env.foot_positions[:, :, 2]).view(self.env.num_envs, -1)# - reference_heights
+    #     target_height = self.env.commands[:, 9].unsqueeze(1) * phases + 0.02 # offset for foot radius 2cm
+    #     rew_foot_clearance = torch.square(target_height - foot_height) * (1 - self.env.desired_contact_states)
+    #     return torch.sum(rew_foot_clearance, dim=1)
+    
     def _reward_feet_clearance_cmd_linear(self):
-        phases = 1 - torch.abs(1.0 - torch.clip((self.env.foot_indices * 2.0) - 1.0, 0.0, 1.0) * 2.0)
-        foot_height = (self.env.foot_positions[:, :, 2]).view(self.env.num_envs, -1)# - reference_heights
-        target_height = self.env.commands[:, 9].unsqueeze(1) * phases + 0.02 # offset for foot radius 2cm
-        rew_foot_clearance = torch.square(target_height - foot_height) * (1 - self.env.desired_contact_states)
-        return torch.sum(rew_foot_clearance, dim=1)
+        min_clearance = 0.05  # Minimum required height (e.g., 5 cm)
+        foot_height = self.env.foot_positions[:, :, 2].view(self.env.num_envs, -1)
 
-    def _reward_feet_impact_vel(self):
-        prev_foot_velocities = self.env.prev_foot_velocities[:, :, 2].view(self.env.num_envs, -1)
-        contact_states = torch.norm(self.env.contact_forces[:, self.env.feet_indices, :], dim=-1) > 1.0
+        # Penalize feet below the threshold
+        penalty = torch.square(torch.clamp(min_clearance - foot_height, min=0.0))
 
-        rew_foot_impact_vel = contact_states * torch.square(torch.clip(prev_foot_velocities, -100, 0))
+        # Only apply the penalty when the robot is moving
+        is_moving = (torch.norm(self.env.commands[:, :2], dim=1) > 0.1).float().unsqueeze(1)
+        penalty *= is_moving  # Apply the mask
 
-        return torch.sum(rew_foot_impact_vel, dim=1)
+        return torch.sum(penalty, dim=1)
 
-    def _reward_orientation_control(self):
-        # Penalize non flat base orientation
-        roll_pitch_commands = self.env.commands[:, 10:12]
-        quat_roll = quat_from_angle_axis(-roll_pitch_commands[:, 1],
-                                         torch.tensor([1, 0, 0], device=self.env.device, dtype=torch.float))
-        quat_pitch = quat_from_angle_axis(-roll_pitch_commands[:, 0],
-                                          torch.tensor([0, 1, 0], device=self.env.device, dtype=torch.float))
+    def _reward_foot_mirror(self):
+        diff1 = torch.sum(torch.square(self.env.dof_pos[:,[0,1,2]] - self.env.dof_pos[:,[9,10,11]]),dim=-1)
+        diff2 = torch.sum(torch.square(self.env.dof_pos[:,[3,4,5]] - self.env.dof_pos[:,[6,7,8]]),dim=-1)
+        return 0.5*torch.clamp(-self.env.projected_gravity[:,2],0,1)*(diff1 + diff2) ###
 
-        desired_base_quat = quat_mul(quat_roll, quat_pitch)
-        desired_projected_gravity = quat_rotate_inverse(desired_base_quat, self.env.gravity_vec)
+    def _reward_foot_slide_up(self):
+        cur_footvel_translated = self.env.foot_velocities - self.env.root_states[:, 7:10].unsqueeze(1)
+        footvel_in_body_frame = torch.zeros(self.env.num_envs, len(self.env.feet_indices), 3, device=self.env.device)
+        for i in range(len(self.env.feet_indices)):
+            footvel_in_body_frame[:, i, :] = quat_rotate_inverse(self.env.base_quat, cur_footvel_translated[:, i, :])
+        foot_lateral_vel = torch.sqrt(torch.sum(torch.square(footvel_in_body_frame[:, :, :2]), dim=2)).view(self.env.num_envs, -1)
+        contact = self.env.contact_forces[:, self.env.feet_indices, 2] > 1.
+        contact_filt = torch.logical_or(contact, self.env.last_contacts)
+        cost_slide = torch.sum(contact_filt * foot_lateral_vel, dim=1)*torch.clamp(-self.env.projected_gravity[:,2],0,1)
+        return cost_slide
+    
+    def _reward_upward(self):
+        return 1 - self.env.projected_gravity[:,2]
+    
+    def _reward_has_contact(self):
+        contact = self.env.contact_forces[:, self.env.feet_indices, 2] > 1.
+        contact_filt = torch.logical_or(contact, self.env.last_contacts) #1.*self.contact_filt
+        return(torch.norm(self.env.commands[:, :2], dim=1) < 0.1)*torch.sum(contact_filt,dim=-1)/4 
 
-        return torch.sum(torch.square(self.env.projected_gravity[:, :2] - desired_projected_gravity[:, :2]), dim=1)
+    def _reward_foot_clearance(self):
+        cur_footpos_translated = self.env.foot_positions - self.env.root_states[:, 0:3].unsqueeze(1)
+        footpos_in_body_frame = torch.zeros(self.env.num_envs, len(self.env.feet_indices), 3, device=self.env.device)
+        cur_footvel_translated = self.env.foot_velocities - self.env.root_states[:, 7:10].unsqueeze(1)
+        footvel_in_body_frame = torch.zeros(self.env.num_envs, len(self.env.feet_indices), 3, device=self.env.device)
+        for i in range(len(self.env.feet_indices)):
+            footpos_in_body_frame[:, i, :] = quat_rotate_inverse(self.env.base_quat, cur_footpos_translated[:, i, :])
+            footvel_in_body_frame[:, i, :] = quat_rotate_inverse(self.env.base_quat, cur_footvel_translated[:, i, :])
+        
+        clearance_height_target = -0.22
+        height_error = torch.square(footpos_in_body_frame[:, :, 2] - clearance_height_target).view(self.env.num_envs, -1)
+        foot_lateral_vel = torch.sqrt(torch.sum(torch.square(footvel_in_body_frame[:, :, :2]), dim=2)).view(self.env.num_envs, -1)
+        # contact = self.env.contact_forces[:, self.env.feet_indices, 2] > 1.
+        # no_contact = 1.*(torch.logical_or(contact, self.env.last_contacts) == 0)
+        clearance_reward = height_error * foot_lateral_vel 
+        
+        return torch.sum(clearance_reward, dim=1)*torch.clamp(-self.env.projected_gravity[:,2],0,1)
 
-    def _reward_raibert_heuristic(self):
-        cur_footsteps_translated = self.env.foot_positions - self.env.base_pos.unsqueeze(1)
-        footsteps_in_body_frame = torch.zeros(self.env.num_envs, 4, 3, device=self.env.device)
-        for i in range(4):
-            footsteps_in_body_frame[:, i, :] = quat_apply_yaw(quat_conjugate(self.env.base_quat),
-                                                              cur_footsteps_translated[:, i, :])
+    # def _reward_feet_impact_vel(self):
+    #     prev_foot_velocities = self.env.prev_foot_velocities[:, :, 2].view(self.env.num_envs, -1)
+    #     contact_states = torch.norm(self.env.contact_forces[:, self.env.feet_indices, :], dim=-1) > 1.0
 
-        # nominal positions: [FR, FL, RR, RL]
-        if self.env.cfg.commands.num_commands >= 13:
-            desired_stance_width = self.env.commands[:, 12:13]
-            desired_ys_nom = torch.cat([desired_stance_width / 2, -desired_stance_width / 2, desired_stance_width / 2, -desired_stance_width / 2], dim=1)
-        else:
-            desired_stance_width = 0.3
-            desired_ys_nom = torch.tensor([desired_stance_width / 2,  -desired_stance_width / 2, desired_stance_width / 2, -desired_stance_width / 2], device=self.env.device).unsqueeze(0)
+    #     rew_foot_impact_vel = contact_states * torch.square(torch.clip(prev_foot_velocities, -100, 0))
 
-        if self.env.cfg.commands.num_commands >= 14:
-            desired_stance_length = self.env.commands[:, 13:14]
-            desired_xs_nom = torch.cat([desired_stance_length / 2, desired_stance_length / 2, -desired_stance_length / 2, -desired_stance_length / 2], dim=1)
-        else:
-            desired_stance_length = 0.45
-            desired_xs_nom = torch.tensor([desired_stance_length / 2,  desired_stance_length / 2, -desired_stance_length / 2, -desired_stance_length / 2], device=self.env.device).unsqueeze(0)
+    #     return torch.sum(rew_foot_impact_vel, dim=1)
 
-        # raibert offsets
-        phases = torch.abs(1.0 - (self.env.foot_indices * 2.0)) * 1.0 - 0.5
-        frequencies = self.env.commands[:, 4]
-        x_vel_des = self.env.commands[:, 0:1]
-        yaw_vel_des = self.env.commands[:, 2:3]
-        y_vel_des = yaw_vel_des * desired_stance_length / 2
-        desired_ys_offset = phases * y_vel_des * (0.5 / frequencies.unsqueeze(1))
-        desired_ys_offset[:, 2:4] *= -1
-        desired_xs_offset = phases * x_vel_des * (0.5 / frequencies.unsqueeze(1))
+    # def _reward_orientation_control(self):
+    #     # Penalize non flat base orientation
+    #     roll_pitch_commands = self.env.commands[:, 10:12]
+    #     quat_roll = quat_from_angle_axis(-roll_pitch_commands[:, 1],
+    #                                      torch.tensor([1, 0, 0], device=self.env.device, dtype=torch.float))
+    #     quat_pitch = quat_from_angle_axis(-roll_pitch_commands[:, 0],
+    #                                       torch.tensor([0, 1, 0], device=self.env.device, dtype=torch.float))
 
-        desired_ys_nom = desired_ys_nom + desired_ys_offset
-        desired_xs_nom = desired_xs_nom + desired_xs_offset
+    #     desired_base_quat = quat_mul(quat_roll, quat_pitch)
+    #     desired_projected_gravity = quat_rotate_inverse(desired_base_quat, self.env.gravity_vec)
 
-        desired_footsteps_body_frame = torch.cat((desired_xs_nom.unsqueeze(2), desired_ys_nom.unsqueeze(2)), dim=2)
+    #     return torch.sum(torch.square(self.env.projected_gravity[:, :2] - desired_projected_gravity[:, :2]), dim=1)
 
-        err_raibert_heuristic = torch.abs(desired_footsteps_body_frame - footsteps_in_body_frame[:, :, 0:2])
+    # def _reward_raibert_heuristic(self):
+    #     cur_footsteps_translated = self.env.foot_positions - self.env.base_pos.unsqueeze(1)
+    #     footsteps_in_body_frame = torch.zeros(self.env.num_envs, 4, 3, device=self.env.device)
+    #     for i in range(4):
+    #         footsteps_in_body_frame[:, i, :] = quat_apply_yaw(quat_conjugate(self.env.base_quat),
+    #                                                           cur_footsteps_translated[:, i, :])
 
-        reward = torch.sum(torch.square(err_raibert_heuristic), dim=(1, 2))
+    #     # nominal positions: [FR, FL, RR, RL]
+    #     if self.env.cfg.commands.num_commands >= 13:
+    #         desired_stance_width = self.env.commands[:, 12:13]
+    #         desired_ys_nom = torch.cat([desired_stance_width / 2, -desired_stance_width / 2, desired_stance_width / 2, -desired_stance_width / 2], dim=1)
+    #     else:
+    #         desired_stance_width = 0.3
+    #         desired_ys_nom = torch.tensor([desired_stance_width / 2,  -desired_stance_width / 2, desired_stance_width / 2, -desired_stance_width / 2], device=self.env.device).unsqueeze(0)
 
-        return reward
+    #     if self.env.cfg.commands.num_commands >= 14:
+    #         desired_stance_length = self.env.commands[:, 13:14]
+    #         desired_xs_nom = torch.cat([desired_stance_length / 2, desired_stance_length / 2, -desired_stance_length / 2, -desired_stance_length / 2], dim=1)
+    #     else:
+    #         desired_stance_length = 0.45
+    #         desired_xs_nom = torch.tensor([desired_stance_length / 2,  desired_stance_length / 2, -desired_stance_length / 2, -desired_stance_length / 2], device=self.env.device).unsqueeze(0)
+
+    #     # raibert offsets
+    #     phases = torch.abs(1.0 - (self.env.foot_indices * 2.0)) * 1.0 - 0.5
+    #     frequencies = self.env.commands[:, 4]
+    #     x_vel_des = self.env.commands[:, 0:1]
+    #     yaw_vel_des = self.env.commands[:, 2:3]
+    #     y_vel_des = yaw_vel_des * desired_stance_length / 2
+    #     desired_ys_offset = phases * y_vel_des * (0.5 / frequencies.unsqueeze(1))
+    #     desired_ys_offset[:, 2:4] *= -1
+    #     desired_xs_offset = phases * x_vel_des * (0.5 / frequencies.unsqueeze(1))
+
+    #     desired_ys_nom = desired_ys_nom + desired_ys_offset
+    #     desired_xs_nom = desired_xs_nom + desired_xs_offset
+
+    #     desired_footsteps_body_frame = torch.cat((desired_xs_nom.unsqueeze(2), desired_ys_nom.unsqueeze(2)), dim=2)
+
+    #     err_raibert_heuristic = torch.abs(desired_footsteps_body_frame - footsteps_in_body_frame[:, :, 0:2])
+
+    #     reward = torch.sum(torch.square(err_raibert_heuristic), dim=(1, 2))
+
+    #     return reward

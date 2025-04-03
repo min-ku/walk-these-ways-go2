@@ -132,14 +132,14 @@ class Cfg(PrefixProto, cli=False):
 
         lin_vel_x = [-1.0, 1.0]  # min max [m/s]
         lin_vel_y = [-1.0, 1.0]  # min max [m/s]
-        ang_vel_yaw = [-1, 1]  # min max [rad/s]
+        ang_vel_yaw = [-1.0, 1.0]  # min max [rad/s]
         heading = [-3.14, 3.14]
 
         body_height_cmd = [-0.05, 0.05]
         impulse_height_commands = False
 
         limit_vel_x = [-10.0, 10.0]
-        limit_vel_y = [-0.6, 0.6]
+        limit_vel_y = [-2.0, 2.0]
         limit_vel_yaw = [-10.0, 10.0]
         limit_body_height = [-0.05, 0.05]
         limit_gait_phase = [0, 0.01]
@@ -297,8 +297,8 @@ class Cfg(PrefixProto, cli=False):
 
     class reward_scales(ParamsProto, cli=False):
         termination = -0.0
-        tracking_lin_vel = 1.0 #1.0
-        tracking_ang_vel = 0.5 #0.5
+        tracking_lin_vel = 1.0
+        tracking_ang_vel = 0.5
         lin_vel_z = -2.0
         ang_vel_xy = -0.05
         orientation = -0.
@@ -310,9 +310,9 @@ class Cfg(PrefixProto, cli=False):
         collision = -1.
         feet_stumble = -0.0
         action_rate = -0.01
-        stand_still = -0.2  #-0.01
+        stand_still = -0.
         
-        feet_slip = -0.04
+        feet_slip = -0.0
 
         feet_contact_forces = 0.
         tracking_lin_vel_lat = 0.

@@ -27,19 +27,19 @@ def train_go2(headless=True):
     # Cfg.curriculum_thresholds.tracking_contacts_shaped_vel = 0.90
     # Cfg.curriculum_thresholds.tracking_contacts_shaped_force = 0.90
 
-    Cfg.commands.distributional_commands = False
+    Cfg.commands.distributional_commands = True
     Cfg.control.control_type = "actuator_net" # "P"
 
-    Cfg.domain_rand.lag_timesteps = 6
+    Cfg.domain_rand.lag_timesteps = 3
     Cfg.domain_rand.randomize_lag_timesteps = True
     Cfg.domain_rand.randomize_rigids_after_start = False
     Cfg.domain_rand.randomize_friction_indep = False
     Cfg.domain_rand.randomize_friction = True
-    Cfg.domain_rand.friction_range = [0.05, 4.5] #[0.1, 3.0]
+    Cfg.domain_rand.friction_range = [0.1, 3.0]
     Cfg.domain_rand.randomize_restitution = True
-    Cfg.domain_rand.restitution_range = [0.0, 0.4]
+    Cfg.domain_rand.restitution_range = [0.0, 1.0]
     Cfg.domain_rand.randomize_base_mass = True
-    Cfg.domain_rand.added_mass_range = [-1.0, 3.0]
+    Cfg.domain_rand.added_mass_range = [-1.0, 2.0]
     Cfg.domain_rand.randomize_gravity = True
     Cfg.domain_rand.gravity_range = [-1.0, 1.0]
     Cfg.domain_rand.gravity_rand_interval_s = 8.0
@@ -52,7 +52,9 @@ def train_go2(headless=True):
     Cfg.domain_rand.motor_strength_range = [0.9, 1.1]
     Cfg.domain_rand.randomize_motor_offset = True
     Cfg.domain_rand.motor_offset_range = [-0.02, 0.02]
-    Cfg.domain_rand.push_robots = False
+    Cfg.domain_rand.push_robots = True
+    Cfg.domain_rand.push_interval_s = 15
+    Cfg.domain_rand.max_push_vel_xy = 1
     Cfg.domain_rand.randomize_Kp_factor = True
     Cfg.domain_rand.randomize_Kd_factor = True
 
@@ -98,8 +100,8 @@ def train_go2(headless=True):
     Cfg.terrain.mesh_type = "trimesh"  # "heightfield" # none, plane, heightfield or trimesh
     Cfg.terrain.num_cols = 10
     Cfg.terrain.num_rows = 10
-    Cfg.terrain.terrain_width = 2
-    Cfg.terrain.terrain_length = 2
+    Cfg.terrain.terrain_width = 5
+    Cfg.terrain.terrain_length = 5
     Cfg.terrain.x_init_range = 0.2
     Cfg.terrain.y_init_range = 0.2
     Cfg.terrain.teleport_thresh = 0.3
@@ -122,8 +124,8 @@ def train_go2(headless=True):
 
     # Cfg.reward_scales.feet_contact_forces = 0.0
     # Cfg.reward_scales.feet_slip = -0.04
-    # Cfg.reward_scales.action_smoothness_1 = -0.1
-    # Cfg.reward_scales.action_smoothness_2 = -0.1
+    # Cfg.reward_scales.action_smoothness_1 = -0.01
+    # Cfg.reward_scales.action_smoothness_2 = -0.01
     # Cfg.reward_scales.dof_vel = -1e-4
     # Cfg.reward_scales.dof_pos = -0.0
     # Cfg.reward_scales.jump = 0.0 # 10.0
@@ -155,8 +157,8 @@ def train_go2(headless=True):
     Cfg.rewards.only_positive_rewards_ji22_style = False
     Cfg.rewards.sigma_rew_neg = 0.02
 
-    Cfg.commands.lin_vel_x = [-1.0, 1.0]
-    Cfg.commands.lin_vel_y = [-1.0, 1.0]
+    Cfg.commands.lin_vel_x = [-0.5, 0.5]
+    Cfg.commands.lin_vel_y = [-0.5, 0.5]
     Cfg.commands.ang_vel_yaw = [-1.0, 1.0]
     # Cfg.commands.body_height_cmd = [-0.25, 0.15]
     # Cfg.commands.gait_frequency_cmd_range = [2.0, 4.0]
@@ -211,7 +213,7 @@ def train_go2(headless=True):
 
     env = VelocityTrackingEasyEnv(sim_device='cuda:0', headless=headless, cfg=Cfg)
 
-    resume_training = True
+    resume_training = False
     if resume_training:
       import glob
       RunnerArgs.resume = True
@@ -228,7 +230,7 @@ def train_go2(headless=True):
     env = HistoryWrapper(env)
     gpu_id = 0
     runner = Runner(env, device=f"cuda:{gpu_id}")
-    runner.learn(num_learning_iterations=10000, init_at_random_ep_len=True, eval_freq=100)
+    runner.learn(num_learning_iterations=30000, init_at_random_ep_len=True, eval_freq=100)
 
 
 if __name__ == '__main__':
