@@ -18,7 +18,7 @@ def train_go2(headless=True):
 
     config_go2(Cfg)
 
-    Cfg.env.num_envs = 1000
+    Cfg.env.num_envs = 4000
 
     Cfg.commands.num_lin_vel_bins = 30
     Cfg.commands.num_ang_vel_bins = 30
@@ -28,7 +28,7 @@ def train_go2(headless=True):
     # Cfg.curriculum_thresholds.tracking_contacts_shaped_force = 0.90
 
     Cfg.commands.distributional_commands = True
-    Cfg.control.control_type = "actuator_net" # "P"
+    Cfg.control.control_type = "P" # "P"
 
     Cfg.domain_rand.lag_timesteps = 3
     Cfg.domain_rand.randomize_lag_timesteps = True
@@ -95,24 +95,24 @@ def train_go2(headless=True):
     Cfg.domain_rand.tile_height_curriculum = False
     Cfg.domain_rand.tile_height_update_interval = 1000000
     Cfg.domain_rand.tile_height_curriculum_step = 0.01
-    Cfg.terrain.border_size = 0.0
+    Cfg.terrain.border_size = 25.0
     # Default value = "trimesh"
     Cfg.terrain.mesh_type = "trimesh"  # "heightfield" # none, plane, heightfield or trimesh
-    Cfg.terrain.num_cols = 10
+    Cfg.terrain.num_cols = 20
     Cfg.terrain.num_rows = 10
-    Cfg.terrain.terrain_width = 5
-    Cfg.terrain.terrain_length = 5
+    Cfg.terrain.terrain_width = 8
+    Cfg.terrain.terrain_length = 8
     Cfg.terrain.x_init_range = 0.2
     Cfg.terrain.y_init_range = 0.2
     Cfg.terrain.teleport_thresh = 0.3
     Cfg.terrain.teleport_robots = True
-    Cfg.terrain.center_robots = True
+    Cfg.terrain.center_robots = False
     Cfg.terrain.center_span = 4
     Cfg.terrain.horizontal_scale = 0.10
 
-    Cfg.terrain.terrain_noise_magnitude = 0.05
-    Cfg.terrain.terrain_smoothness = 0.05
-    Cfg.terrain.terrain_noise = False
+    # Cfg.terrain.terrain_noise_magnitude = 0.13
+    # Cfg.terrain.terrain_smoothness = 0.01
+    # Cfg.terrain.terrain_noise = False
 
     Cfg.rewards.use_terminal_foot_height = False
     Cfg.rewards.use_terminal_body_height = True
@@ -172,8 +172,8 @@ def train_go2(headless=True):
     # Cfg.commands.stance_width_range = [0.10, 0.45]
     # Cfg.commands.stance_length_range = [0.35, 0.45]
 
-    Cfg.commands.limit_vel_x = [-2., 2.]
-    Cfg.commands.limit_vel_y = [-2., 2.]
+    Cfg.commands.limit_vel_x = [-1., 1.]
+    Cfg.commands.limit_vel_y = [-1., 1.]
     Cfg.commands.limit_vel_yaw = [-2., 2.]
     # Cfg.commands.limit_body_height = [-0.25, 0.15]
     # Cfg.commands.limit_gait_frequency = [2.0, 4.0]
@@ -230,7 +230,7 @@ def train_go2(headless=True):
     env = HistoryWrapper(env)
     gpu_id = 0
     runner = Runner(env, device=f"cuda:{gpu_id}")
-    runner.learn(num_learning_iterations=30000, init_at_random_ep_len=True, eval_freq=100)
+    runner.learn(num_learning_iterations=40000, init_at_random_ep_len=True, eval_freq=100)
 
 
 if __name__ == '__main__':

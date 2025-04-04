@@ -50,6 +50,7 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
     _ = Cnfg.rewards
     _.soft_dof_pos_limit = 0.9
     _.base_height_target = 0.32 #0.25
+    _.clearance_height_target = -0.22
 
     _ = Cnfg.reward_scales
     _.tracking_lin_vel = 2.0
@@ -63,13 +64,13 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
     _.dof_pos_limits = -10.0
     _.collision = -1
     _.base_height = -10.
-    _.feet_stumble = -0.05
+    _.feet_stumble = 0.0 # -0.05
     
     _.upward = 0.5
     _.has_contact = 0.5
     _.foot_clearance = -0.5
     _.foot_mirror = -0.05
-    _.foot_slide_up = -0.05
+    _.foot_slide = -0.05
 
     _.feet_contact_forces = -0.00015
     _.orientation = -0.2
@@ -80,13 +81,13 @@ def config_go2(Cnfg: Union[Cfg, Meta]):
 
     _ = Cnfg.terrain
     _.mesh_type = 'trimesh'
-    _.measure_heights = False
+    _.measure_heights = True
     _.terrain_noise_magnitude = 0.0
     _.teleport_robots = True
     # _.border_size = 50
 
-    _.terrain_proportions = [0, 0, 0, 0, 0, 0, 0, 0, 1.0]
-    # _.curriculum = False
+    _.terrain_proportions = [0.1, 0.1, 0.35, 0.25, 0.2] #[0, 0, 0, 0, 0, 0, 0, 0, 1.0]
+    _.curriculum = True
 
     # _ = Cnfg.env
     # _.num_observations = 42

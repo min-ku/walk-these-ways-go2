@@ -91,21 +91,23 @@ def load_env(label, headless=False):
     Cfg.env.num_recording_envs = 1
     Cfg.env.num_envs = 1
     Cfg.terrain.mesh_type = "trimesh"
-    Cfg.terrain.num_rows = 1
-    Cfg.terrain.num_cols = 1
-    Cfg.terrain.border_size = 0
+    Cfg.terrain.num_rows = 2
+    Cfg.terrain.num_cols = 2
+    Cfg.terrain.border_size = 5.
     Cfg.terrain.center_robots = True
     Cfg.terrain.center_span = 1
     Cfg.terrain.teleport_robots = True
     Cfg.env.episode_length_s = 999999
-    Cfg.terrain.terrain_noise = False
-    Cfg.terrain.terrain_noise_magnitude = 0.1
-    Cfg.terrain.terrain_smoothness = 0.1
+    # Cfg.terrain.terrain_noise = False
+    # Cfg.terrain.terrain_noise_magnitude = 0.12
+    # Cfg.terrain.terrain_smoothness = 0.01
+    Cfg.terrain.terrain_proportions = [0.1, 0.1, 0.35, 0.25, 0.2] #[0, 0, 0, 0, 0, 0, 0, 0, 1.0]
+    Cfg.terrain.curriculum = False
 
     Cfg.domain_rand.lag_timesteps = 6
     Cfg.domain_rand.randomize_lag_timesteps = True
     # default control_typw is "actuator_net", you can also switch it to "P" to enable joint PD control
-    Cfg.control.control_type = "actuator_net" 
+    Cfg.control.control_type = "P" 
     Cfg.asset.flip_visual_attachments = True
 
 
@@ -145,7 +147,7 @@ def interact_go2(headless=False):
         
     # label = "gait-conditioned-agility/pretrain-v0/train"
     # label = "gait-conditioned-agility/pretrain-go2/train"
-    label = "gait-conditioned-agility/2025-04-02/train"
+    label = "gait-conditioned-agility/2025-04-04/train"
 
     # Start Sim
     env, policy = load_env(label, headless=headless)

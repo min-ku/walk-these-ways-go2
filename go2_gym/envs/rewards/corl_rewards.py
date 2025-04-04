@@ -14,20 +14,22 @@ class CoRLRewards:
     # ------------ reward functions----------------
     def _reward_lin_vel_z(self):
         # Penalize z axis base linear velocity
-        return torch.square(self.env.base_lin_vel[:, 2])
+        return torch.square(self.env.base_lin_vel[:, 2])*torch.clamp(-self.env.projected_gravity[:,2],0,1)
 
     def _reward_ang_vel_xy(self):
         # Penalize xy axes base angular velocity
-        return torch.sum(torch.square(self.env.base_ang_vel[:, :2]), dim=1)
+        return torch.sum(torch.square(self.env.base_ang_vel[:, :2]), dim=1)*torch.clamp(-self.env.projected_gravity[:,2],0,1)
 
     def _reward_orientation(self):
         # Penalize non flat base orientation
-        return torch.sum(torch.square(self.env.projected_gravity[:, :2]), dim=1)
+        return torch.sum(torch.square(self.env.projected_gravity[:, :2]), dim=1)*torch.clamp(-self.env.projected_gravity[:,2],0,1)
 
     def _reward_base_height(self):
         # Penalize base height away from target
-        base_height = self.env.root_states[:, 2]
-        return torch.square(base_height - self.env.cfg.rewards.base_height_target)
+        # self._get_heights(torch.arange(self.num_envs, device=self.device), self.cfg)
+        base_height = self.env._get_heights(torch.arange(self.env.num_envs, device=self.env.device), self.env.cfg) # self.env.root_states[:, 2]
+        base_height = torch.mean(self.env.root_states[:, 2].unsqueeze(1) - base_height, dim=1)
+        return torch.square(base_height - self.env.cfg.rewards.base_height_target) * torch.clamp(-self.env.projected_gravity[:,2],0,1)
 
     def _reward_torques(self):
         # Penalize torques
@@ -47,7 +49,7 @@ class CoRLRewards:
 
     def _reward_collision(self):
         # Penalize collisions on selected bodies
-        return torch.sum(1. * (torch.norm(self.env.contact_forces[:, self.env.penalised_contact_indices, :], dim=-1) > 0.1), dim=1)
+        return torch.clamp(-self.env.projected_gravity[:,2],0,1) * torch.sum(1. * (torch.norm(self.env.contact_forces[:, self.env.penalised_contact_indices, :], dim=-1) > 0.1), dim=1)
 
     def _reward_termination(self):
         # Terminal reward / penalty
@@ -114,16 +116,16 @@ class CoRLRewards:
 
     def _reward_stumble(self):
         # Penalize feet hitting vertical surfaces
-        return torch.any(torch.norm(self.env.contact_forces[:, self.env.feet_indices, :2], dim=2) >\
-             5 *torch.abs(self.env.contact_forces[:, self.env.feet_indices, 2]), dim=1)
+        return torch.clamp(-self.env.projected_gravity[:,2],0,1)* (torch.any(torch.norm(self.env.contact_forces[:, self.env.feet_indices, :2], dim=2) >\
+             5 *torch.abs(self.env.contact_forces[:, self.env.feet_indices, 2]), dim=1))
 
     def _reward_stand_still(self):
         # Penalize motion at zero commands
-        return torch.sum(torch.abs(self.env.dof_pos - self.env.default_dof_pos), dim=1) * (torch.norm(self.env.commands[:, :2], dim=1) < 0.1)
+        return torch.sum(torch.abs(self.env.dof_pos - self.env.default_dof_pos), dim=1) * (1 - self.env.projected_gravity[:,2]) * (torch.norm(self.env.commands[:, :2], dim=1) < 0.1)
 
     def _reward_feet_contact_forces(self):
         # penalize high contact forces
-        return torch.sum((torch.norm(self.env.contact_forces[:, self.env.feet_indices, :],
+        return torch.clamp(-self.env.projected_gravity[:,2],0,1) * torch.sum((torch.norm(self.env.contact_forces[:, self.env.feet_indices, :],
                                      dim=-1) - self.env.cfg.rewards.max_contact_force).clip(min=0.), dim=1)
 
     def _reward_jump(self):
@@ -209,7 +211,7 @@ class CoRLRewards:
         diff2 = torch.sum(torch.square(self.env.dof_pos[:,[3,4,5]] - self.env.dof_pos[:,[6,7,8]]),dim=-1)
         return 0.5*torch.clamp(-self.env.projected_gravity[:,2],0,1)*(diff1 + diff2) ###
 
-    def _reward_foot_slide_up(self):
+    def _reward_foot_slide(self):
         cur_footvel_translated = self.env.foot_velocities - self.env.root_states[:, 7:10].unsqueeze(1)
         footvel_in_body_frame = torch.zeros(self.env.num_envs, len(self.env.feet_indices), 3, device=self.env.device)
         for i in range(len(self.env.feet_indices)):
@@ -237,7 +239,7 @@ class CoRLRewards:
             footpos_in_body_frame[:, i, :] = quat_rotate_inverse(self.env.base_quat, cur_footpos_translated[:, i, :])
             footvel_in_body_frame[:, i, :] = quat_rotate_inverse(self.env.base_quat, cur_footvel_translated[:, i, :])
         
-        clearance_height_target = -0.22
+        clearance_height_target = self.env.cfg.rewards.clearance_height_target
         height_error = torch.square(footpos_in_body_frame[:, :, 2] - clearance_height_target).view(self.env.num_envs, -1)
         foot_lateral_vel = torch.sqrt(torch.sum(torch.square(footvel_in_body_frame[:, :, :2]), dim=2)).view(self.env.num_envs, -1)
         # contact = self.env.contact_forces[:, self.env.feet_indices, 2] > 1.
